@@ -1,0 +1,31 @@
+name: Frontend CI (Lint & Build)
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  check-quality:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm install
+
+      # Menjalankan ESLint sebagai Code Quality Tool
+      - name: Run Lint
+        run: npm run lint
+
+      # Memastikan aplikasi bisa di-build dengan sukses sebelum CD Vercel jalan
+      - name: Build check
+        run: npm run build
