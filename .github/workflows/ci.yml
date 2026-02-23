@@ -2,9 +2,9 @@ name: Frontend CI (Lint & Build)
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main", "staging" ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "main", "staging" ]
 
 jobs:
   check-quality:
