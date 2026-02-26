@@ -1,6 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import Home from './pages/Home';
-import Reading from './pages/reading/Reading.jsx';
+import Home from './pages/Home.js';
+import Reading from './pages/reading/Reading.js';
 
 function App() {
     return (
