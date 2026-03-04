@@ -29,3 +29,22 @@ jobs:
       # Memastikan aplikasi bisa di-build dengan sukses sebelum CD Vercel jalan
       - name: Build check
         run: npm run build
+  deploy-staging:
+    name: Continuous Deployment (Staging)
+    runs-on: ubuntu-latest
+    needs: [ check-quality ]
+
+    if: github.ref == 'refs/heads/staging'
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Dummy Vercel Deployment Script
+        run: |
+          echo "✅ CI Gateway Passed! Memulai deployment ke Vercel Staging Environment..."
+          echo "🌐 URL Target: https://staging.yomu.vercel.app"
+          echo "Menjalankan perintah: vercel pull --environment=preview"
+          echo "Menjalankan perintah: vercel build"
+          echo "Menjalankan perintah: vercel deploy --prebuilt"
+          echo "🎉 Deployment Staging Berhasil! (Dummy Script)"
