@@ -48,3 +48,13 @@ jobs:
           echo "Menjalankan perintah: vercel build"
           echo "Menjalankan perintah: vercel deploy --prebuilt"
           echo "🎉 Deployment Staging Berhasil! (Dummy Script)"
+  deploy-production:
+    name: Continuous Deployment (Production)
+    runs-on: ubuntu-latest
+    needs: [ check-quality ]
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: Dummy Vercel Production Deploy
+        run: |
+          echo "🚀 CI sukses! Deploy ke PRODUCTION Environment..."
+          echo "🌐 URL Target: https://yomu.info"
