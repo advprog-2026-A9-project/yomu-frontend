@@ -7,18 +7,18 @@ import ClanDashboard from './pages/social/ClanDashboard';
 import TestDiscussionPage from './pages/discussion/TestDiscussionPage';
 
 function App() {
-    return (
-        <Router>
-            <Routes>
-                <Route path="/" element={<Home />} />
-                <Route path="/readings" element={<Reading />} />
-                <Route path="/register" element={<RegisterPage />} />
-                <Route path="/login" element={<LoginPage />} />
-                <Route path="/clan" element={<ClanDashboard />} />
-                <Route path="/discussion-test" element={<TestDiscussionPage />}/>
-            </Routes>
-        </Router>
-    );
+  return (
+    <Router>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/readings" element={<Reading />} />
+        <Route path="/register" element={<RegisterPage />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/clan" element={<ClanDashboard />} />
+        <Route path="/discussion-test" element={<TestDiscussionPage />} />
+      </Routes>
+    </Router>
+  );
 }
 
 export default App;
