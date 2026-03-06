@@ -1,8 +1,60 @@
-import { Link } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 
 function Home() {
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [userRole, setUserRole] = useState('');
+    const navigate = useNavigate();
+
+    // Mengecek apakah ada token di localStorage saat halaman dimuat
+    useEffect(() => {
+        const token = localStorage.getItem('token');
+        const role = localStorage.getItem('role');
+        if (token) {
+            setIsLoggedIn(true);
+            setUserRole(role || 'PELAJAR');
+        }
+    }, []);
+
+    // Fungsi untuk menghapus sesi
+    const handleLogout = () => {
+        localStorage.removeItem('token');
+        localStorage.removeItem('userId');
+        localStorage.removeItem('role');
+        setIsLoggedIn(false);
+        setUserRole('');
+        navigate('/'); // Memuat ulang halaman Home
+    };
+
     return (
-        <div className="min-h-screen flex flex-col items-center justify-center bg-gray-900 text-white p-6 font-sans text-center">
+        <div className="min-h-screen flex flex-col items-center justify-center bg-gray-900 text-white p-6 font-sans text-center relative">
+
+            {/* Navigasi Auth di Pojok Kanan Atas */}
+            <div className="absolute top-6 right-8 flex gap-4 items-center">
+                {isLoggedIn ? (
+                    <>
+                        <span className="text-gray-400 text-sm">
+                            Status: <strong className="text-green-400">Online ({userRole})</strong>
+                        </span>
+                        <button
+                            onClick={handleLogout}
+                            className="px-4 py-2 bg-red-600 hover:bg-red-700 rounded-lg font-semibold transition text-sm shadow-md"
+                        >
+                            Logout
+                        </button>
+                    </>
+                ) : (
+                    <>
+                        <Link to="/login" className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg font-semibold transition text-sm shadow-md">
+                            Login
+                        </Link>
+                        <Link to="/register" className="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg font-semibold transition text-sm shadow-md">
+                            Register
+                        </Link>
+                    </>
+                )}
+            </div>
+
             <h1 className="text-5xl font-bold mb-4 text-blue-400">Yomu Dashboard</h1>
             <p className="text-xl text-gray-400 mb-10 max-w-lg">
                 Selamat datang di proyek Yomu. Pilih modul yang ingin kamu akses di bawah ini.
