@@ -16,6 +16,7 @@ describe('RegisterForm', () => {
 
     test('menampilkan error jika email dan HP kosong', async () => {
         render(<RegisterForm />);
+        await userEvent.type(screen.getByPlaceholderText('Username'), 'mizukitest');
         await userEvent.click(screen.getByText('Daftar'));
         expect(screen.getByText('Email atau nomor HP harus diisi')).toBeInTheDocument();
     });
