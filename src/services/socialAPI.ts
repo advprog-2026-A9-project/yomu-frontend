@@ -33,33 +33,39 @@ async function fetchWithTimeout(
 export interface CreateClanPayload {
     name: string;
     description: string;
-    userId: string;
 }
 
 export interface deleteClanPayload {
     id: string;
-    userId: string;
 }
 
 export async function createClan(data: CreateClanPayload): Promise<any> {
+    const token = localStorage.getItem("token");
     const response = await fetchWithTimeout(`${API_BASE}`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+            "Content-Type": "application/json",
+            ...(token && { Authorization: `Bearer ${token}` }),
+        },
         body: JSON.stringify(data),
     });
+
+    if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText || 'Gagal membuat clan');
+    }
 
     return response.json();
 }
 
 export async function deleteClan(data: deleteClanPayload): Promise<any> {
+    const token = localStorage.getItem("token");
     const response = await fetchWithTimeout(`${API_BASE}/${data.id}/delete`, {
         method: "POST",
         headers: {
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
+            ...(token && { Authorization: `Bearer ${token}` }),
         },
-        body: JSON.stringify({
-            userId: data.userId
-        }),
     });
 
     if (!response.ok) {
