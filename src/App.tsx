@@ -1,9 +1,10 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import Home from './pages/Home.js';
-import Reading from './pages/reading/Reading.js';
+import Home from './pages/Home';
+import Reading from './pages/reading/Reading';
 import RegisterPage from './pages/auth/RegisterPage';
 import LoginPage from './pages/auth/LoginPage';
-import ClanDashboard from './pages/social/ClanDashboard.js';
+import ClanDashboard from './pages/social/ClanDashboard';
+import TestDiscussionPage from './pages/discussion/TestDiscussionPage';
 
 function App() {
     return (
@@ -14,6 +15,7 @@ function App() {
                 <Route path="/register" element={<RegisterPage />} />
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/clan" element={<ClanDashboard />} />
+                <Route path="/discussion-test" element={<TestDiscussionPage />}/>
             </Routes>
         </Router>
     );
