@@ -1,4 +1,4 @@
-import DiscussionSection from "../../components/discussion/DIscussionSection";
+import DiscussionSection from "../../components/discussion/DiscussionSection";
 
 function TestDiscussionPage() {
   const DUMMY_READING_ID = "123e4567-e89b-12d3-a456-426614174000";
