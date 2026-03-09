@@ -20,6 +20,7 @@ function ClanDashboard() {
                 const currentClan = await getMyClan();
 
                 if (currentClan) {
+                    console.log("✅ Clan ditemukan:", currentClan.name);
                     setMyClan({
                         id: currentClan.id,
                         name: currentClan.name,
@@ -28,9 +29,11 @@ function ClanDashboard() {
                         role: currentClan.role === 'KETUA' ? 'Ketua' : 'Anggota',
                         members: currentClan.members,
                     });
+                } else {
+                    console.log("ℹ️ User belum memiliki clan");
                 }
             } catch (error) {
-                console.error("Gagal mengambil data clan user", error);
+                console.error("❌ Gagal mengambil data clan user", error);
             }
         };
 

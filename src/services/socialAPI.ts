@@ -147,3 +147,45 @@ export async function leaveClan(data: LeaveClanPayload): Promise<any> {
 
     return response.text();
 }
+
+// Leaderboard types
+export interface LeaderboardEntry {
+    clanId: string;
+    clanName: string;
+    tier: string;
+    score: number;
+    rank: number;
+    memberCount: number;
+}
+
+export interface LeaderboardByTier {
+    tier: string;
+    entries: LeaderboardEntry[];
+}
+
+export async function getLeaderboard(): Promise<LeaderboardByTier[]> {
+    const response = await fetchWithTimeout(`${API_BASE}/leaderboard`);
+
+    if (!response.ok) {
+        throw new Error('Gagal mengambil leaderboard');
+    }
+
+    return response.json();
+}
+
+export async function endSeason(): Promise<string> {
+    const token = localStorage.getItem("token");
+    const response = await fetchWithTimeout(`${API_BASE}/admin/end-season`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            ...(token && { Authorization: `Bearer ${token}` }),
+        },
+    });
+
+    if (!response.ok) {
+        throw new Error('Gagal mengakhiri season');
+    }
+
+    return response.text();
+}
