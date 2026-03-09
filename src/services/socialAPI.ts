@@ -39,6 +39,22 @@ export interface deleteClanPayload {
     id: string;
 }
 
+export interface LeaveClanPayload {
+    id: string;
+}
+
+export interface ClanResponse {
+    id: string;
+    name: string;
+    description: string;
+    leaderUserId: string;
+}
+
+export interface MyClanResponse extends ClanResponse {
+    role: string;
+    members: number;
+}
+
 export async function createClan(data: CreateClanPayload): Promise<any> {
     const token = localStorage.getItem("token");
     const response = await fetchWithTimeout(`${API_BASE}`, {
@@ -58,6 +74,44 @@ export async function createClan(data: CreateClanPayload): Promise<any> {
     return response.json();
 }
 
+export async function getAllClans(): Promise<ClanResponse[]> {
+    const response = await fetchWithTimeout(`${API_BASE}`, {
+        method: "GET",
+        headers: {
+            "Content-Type": "application/json",
+        },
+    });
+
+    if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText || 'Gagal mengambil daftar clan');
+    }
+
+    return response.json();
+}
+
+export async function getMyClan(): Promise<MyClanResponse | null> {
+    const token = localStorage.getItem("token");
+    const response = await fetchWithTimeout(`${API_BASE}/me`, {
+        method: "GET",
+        headers: {
+            "Content-Type": "application/json",
+            ...(token && { Authorization: `Bearer ${token}` }),
+        },
+    });
+
+    if (response.status === 404) {
+        return null;
+    }
+
+    if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText || 'Gagal mengambil clan user');
+    }
+
+    return response.json();
+}
+
 export async function deleteClan(data: deleteClanPayload): Promise<any> {
     const token = localStorage.getItem("token");
     const response = await fetchWithTimeout(`${API_BASE}/${data.id}/delete`, {
@@ -71,6 +125,24 @@ export async function deleteClan(data: deleteClanPayload): Promise<any> {
     if (!response.ok) {
         const errorText = await response.text();
         throw new Error(errorText);
+    }
+
+    return response.text();
+}
+
+export async function leaveClan(data: LeaveClanPayload): Promise<any> {
+    const token = localStorage.getItem("token");
+    const response = await fetchWithTimeout(`${API_BASE}/${data.id}/leave`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            ...(token && { Authorization: `Bearer ${token}` }),
+        },
+    });
+
+    if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText || 'Gagal keluar dari clan');
     }
 
     return response.text();

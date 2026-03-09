@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { createClan, deleteClan } from '../../services/socialAPI';
+import { createClan, deleteClan, getMyClan, leaveClan } from '../../services/socialAPI';
 
 interface ClanData {
     id: string;
@@ -15,10 +15,33 @@ function ClanDashboard() {
     const navigate = useNavigate();
 
     useEffect(() => {
+        const loadMyClan = async () => {
+            try {
+                const currentClan = await getMyClan();
+
+                if (currentClan) {
+                    setMyClan({
+                        id: currentClan.id,
+                        name: currentClan.name,
+                        description: currentClan.description,
+                        leaderUserId: currentClan.leaderUserId,
+                        role: currentClan.role === 'KETUA' ? 'Ketua' : 'Anggota',
+                        members: currentClan.members,
+                    });
+                }
+            } catch (error) {
+                console.error("Gagal mengambil data clan user", error);
+            }
+        };
+
         const token = localStorage.getItem("token");
         if (!token) {
             navigate("/login");
+            return;
         }
+
+        loadMyClan();
+        
     }, [navigate]);
 
     const [draft, setDraft] = useState({
@@ -71,8 +94,11 @@ function ClanDashboard() {
             return;
         }
 
-        const confirmDelete = confirm("Apakah Anda yakin ingin menghapus Clan ini?");
-        if (!confirmDelete) return;
+        const confirmationMessage = myClan.role === 'Ketua'
+            ? "Apakah Anda yakin ingin menghapus Clan ini?"
+            : "Apakah Anda yakin ingin keluar dari Clan ini?";
+        const confirmAction = confirm(confirmationMessage);
+        if (!confirmAction) return;
 
         
         try {
@@ -80,11 +106,15 @@ function ClanDashboard() {
                 id: myClan.id,
             };
 
-            await deleteClan(payloadToSend);
+            if (myClan.role === 'Ketua') {
+                await deleteClan(payloadToSend);
+            } else {
+                await leaveClan(payloadToSend);
+            }
             
             setMyClan(null);
             
-            alert("Clan berhasil dihapus.");
+            alert(myClan.role === 'Ketua' ? "Clan berhasil dihapus." : "Berhasil keluar dari clan.");
 
         } catch (error) {
             console.error("Gagal menghapus clan", error);
