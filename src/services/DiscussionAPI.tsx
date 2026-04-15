@@ -5,7 +5,7 @@ export interface CommentData {
     content: string;
     userId: string;
     readingId: string;
-    parentId?: string | null; // Tambahkan ini
+    parentId?: string | null;
     createdAt: string | null;
 }
 
@@ -21,7 +21,6 @@ export const discussionService = {
         }
     },
 
-    // Tambahkan parameter parentId (bisa null jika komentar utama)
     createComment: async (content: string, readingId: string, userId: string, parentId: string | null = null): Promise<CommentData> => {
         try {
             const response = await fetch(`${API_URL}/create`, {
@@ -31,7 +30,7 @@ export const discussionService = {
                     content,
                     readingId,
                     userId,
-                    parentId // Kirim parentId ke backend
+                    parentId
                 }),
             });
             if (!response.ok) throw new Error("Gagal membuat komentar");
@@ -39,6 +38,35 @@ export const discussionService = {
         } catch (error) {
             console.error("Error creating comment:", error);
             throw error; 
+        }
+    },
+
+    // FITUR BARU: Edit Komentar
+    updateComment: async (commentId: string, content: string, userId: string): Promise<CommentData> => {
+        try {
+            const response = await fetch(`${API_URL}/${commentId}`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ content, userId }),
+            });
+            if (!response.ok) throw new Error("Gagal mengubah komentar");
+            return await response.json();
+        } catch (error) {
+            console.error("Error updating comment:", error);
+            throw error;
+        }
+    },
+
+    // FITUR BARU: Hapus Komentar
+    deleteComment: async (commentId: string, userId: string): Promise<void> => {
+        try {
+            const response = await fetch(`${API_URL}/${commentId}?userId=${userId}`, {
+                method: "DELETE",
+            });
+            if (!response.ok) throw new Error("Gagal menghapus komentar");
+        } catch (error) {
+            console.error("Error deleting comment:", error);
+            throw error;
         }
     }
 };
