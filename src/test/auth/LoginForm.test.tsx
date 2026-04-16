@@ -3,8 +3,18 @@ import userEvent from '@testing-library/user-event';
 import { vi } from 'vitest';
 import LoginForm from '../../components/auth/LoginForm';
 
-vi.mock('../../services/authAPI', () => ({
-    loginUser: vi.fn(),
+vi.mock('react-router-dom', async () => {
+    const actual = await vi.importActual<typeof import('react-router-dom')>('react-router-dom');
+    return {
+        ...actual,
+        useNavigate: () => vi.fn(),
+    };
+});
+
+vi.mock('../../context/AuthContext', () => ({
+    useAuth: () => ({
+        login: vi.fn(),
+    }),
 }));
 
 describe('LoginForm', () => {

@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { registerUser } from "../../services/authAPI";
 
+const EMAIL_REGEX = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
+
 const RegisterForm = () => {
     const [username, setUsername] = useState("");
     const [email, setEmail] = useState("");
@@ -21,8 +23,18 @@ const RegisterForm = () => {
             setError("Email atau nomor HP harus diisi");
             return;
         }
+        if (email && !EMAIL_REGEX.test(email.trim())) {
+            setError("Format email tidak valid. Contoh: example@gmail.com");
+            return;
+        }
         try {
-            await registerUser({ username, email, phoneNumber, displayName, password });
+            await registerUser({
+                username,
+                email: email.trim() || null,
+                phoneNumber: phoneNumber.trim() || null,
+                displayName,
+                password,
+            });
             setSuccess("Registrasi berhasil! Silakan login.");
         } catch (err: unknown) {
             setError(err instanceof Error ? err.message : "Registrasi gagal");
