@@ -1,28 +1,13 @@
-import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 function Home() {
-    const [isLoggedIn, setIsLoggedIn] = useState(false);
-    const [userRole, setUserRole] = useState('');
+    const { user, loading, isAuthenticated, logout } = useAuth();
     const navigate = useNavigate();
-
-    // Mengecek apakah ada token di localStorage saat halaman dimuat
-    useEffect(() => {
-        const token = localStorage.getItem('token');
-        const role = localStorage.getItem('role');
-        if (token) {
-            setIsLoggedIn(true);
-            setUserRole(role || 'PELAJAR');
-        }
-    }, []);
 
     // Fungsi untuk menghapus sesi
     const handleLogout = () => {
-        localStorage.removeItem('token');
-        localStorage.removeItem('userId');
-        localStorage.removeItem('role');
-        setIsLoggedIn(false);
-        setUserRole('');
+        logout();
         navigate('/'); // Memuat ulang halaman Home
     };
 
@@ -31,10 +16,12 @@ function Home() {
 
             {/* Navigasi Auth di Pojok Kanan Atas */}
             <div className="absolute top-6 right-8 flex gap-4 items-center">
-                {isLoggedIn ? (
+                {loading ? (
+                    <span className="text-gray-400 text-sm">Checking session...</span>
+                ) : isAuthenticated ? (
                     <>
                         <span className="text-gray-400 text-sm">
-                            Status: <strong className="text-green-400">Online ({userRole})</strong>
+                            Status: <strong className="text-green-400">Online ({user?.role ?? 'PELAJAR'})</strong>
                         </span>
                         <button
                             onClick={handleLogout}

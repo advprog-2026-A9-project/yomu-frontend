@@ -1,18 +1,17 @@
 import { useEffect, useState } from 'react';
-// Pastikan createText sudah di-import
-import { getAllTexts, deleteText, createText, ReadingTextResponse } from '../../services/readingTextAPI';
+import { getAllTexts, deleteText, createText } from '../../services/readingTextAPI.ts';
+import type { ReadingTextResponse } from '../../services/readingTextAPI.ts';
+import { useAuth } from '../../context/AuthContext';
 
 function Reading() {
     const [readings, setReadings] = useState<ReadingTextResponse[]>([]);
     const [status, setStatus] = useState<string>('Loading...');
+    const { isAdmin, loading } = useAuth();
 
-    // State untuk Form Tambah Data
     const [showForm, setShowForm] = useState(false);
     const [newTitle, setNewTitle] = useState('');
     const [newContent, setNewContent] = useState('');
-    const [newCategoryId, setNewCategoryId] = useState<number>(1); // Default ID 1 (Edukasi)
-
-    const isAdmin = localStorage.getItem('role') === 'ADMIN';
+    const [newCategoryId, setNewCategoryId] = useState<number>(1);
 
     const fetchReadings = async () => {
         try {
@@ -39,23 +38,18 @@ function Reading() {
         }
     };
 
-    // Fungsi Submit Form
     const handleCreateSubmit = async (e: React.FormEvent) => {
-        e.preventDefault(); // Mencegah halaman reload
+        e.preventDefault();
         try {
             setStatus('Saving...');
             await createText({
                 title: newTitle,
                 content: newContent,
-                categoryId: newCategoryId
+                categoryId: newCategoryId,
             });
-
-            // Reset form dan sembunyikan
             setNewTitle('');
             setNewContent('');
             setShowForm(false);
-
-            // Ambil data terbaru dari backend
             fetchReadings();
         } catch (err: unknown) {
             alert('Gagal membuat teks: ' + (err instanceof Error ? err.message : 'Unknown error'));
@@ -67,7 +61,6 @@ function Reading() {
         <div className="min-h-screen bg-gray-900 text-white p-10 font-sans">
             <h1 className="text-4xl font-bold mb-6 text-blue-400 text-center">Yomu Library</h1>
 
-            {/* Indikator Status */}
             <div className="flex justify-center mb-8">
                 <span className={`px-4 py-2 rounded-full font-semibold ${
                     status === 'Success' ? 'bg-green-900 text-green-300'
@@ -78,19 +71,18 @@ function Reading() {
                 </span>
             </div>
 
-            {/* Tombol Buka Form (Hanya Admin) */}
-            {isAdmin && !showForm && (
+            {!loading && isAdmin && !showForm && (
                 <div className="flex justify-center mb-6 max-w-6xl mx-auto">
                     <button
                         onClick={() => setShowForm(true)}
-                        className="bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 px-6 rounded shadow-lg transition">
+                        className="bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 px-6 rounded shadow-lg transition"
+                    >
                         + Tambah Teks Bacaan Baru
                     </button>
                 </div>
             )}
 
-            {/* Form Tambah Teks (Hanya Admin) */}
-            {isAdmin && showForm && (
+            {!loading && isAdmin && showForm && (
                 <form onSubmit={handleCreateSubmit} className="bg-gray-800 p-6 rounded-xl border border-gray-700 max-w-2xl mx-auto mb-8 shadow-xl">
                     <h2 className="text-2xl font-bold mb-4 text-blue-300">Buat Teks Baru</h2>
 
@@ -130,19 +122,20 @@ function Reading() {
                         <button
                             type="button"
                             onClick={() => setShowForm(false)}
-                            className="px-4 py-2 bg-gray-600 hover:bg-gray-500 text-white rounded font-bold transition">
+                            className="px-4 py-2 bg-gray-600 hover:bg-gray-500 text-white rounded font-bold transition"
+                        >
                             Batal
                         </button>
                         <button
                             type="submit"
-                            className="px-4 py-2 bg-green-600 hover:bg-green-500 text-white rounded font-bold transition">
+                            className="px-4 py-2 bg-green-600 hover:bg-green-500 text-white rounded font-bold transition"
+                        >
                             Simpan Teks
                         </button>
                     </div>
                 </form>
             )}
 
-            {/* Grid Teks Bacaan */}
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 max-w-6xl mx-auto">
                 {readings.length === 0 && status === 'Success' ? (
                     <p className="text-gray-400 col-span-full text-center">Belum ada teks bacaan tersedia.</p>
@@ -157,7 +150,7 @@ function Reading() {
                                 <p className="text-gray-400 text-sm line-clamp-3 mb-4">{book.content}</p>
                             </div>
 
-                            {isAdmin && (
+                            {!loading && isAdmin && (
                                 <button
                                     onClick={() => handleDelete(book.id)}
                                     className="w-full mt-2 bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded transition"
