@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { createClan, deleteClan } from '../../services/socialAPI';
 
 interface ClanData {
@@ -12,6 +12,15 @@ interface ClanData {
 }
 
 function ClanDashboard() {
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        const token = localStorage.getItem("token");
+        if (!token) {
+            navigate("/login");
+        }
+    }, [navigate]);
+
     const [draft, setDraft] = useState({
         name: "",
         description: ""
@@ -31,7 +40,6 @@ function ClanDashboard() {
             const payloadToSend = {
                 name: draft.name,
                 description: draft.description,
-                userId: crypto.randomUUID()
             };
 
             const created = await createClan(payloadToSend);
@@ -44,8 +52,6 @@ function ClanDashboard() {
                 role: "Ketua",
                 members: 1
             });
-
-            console.log(created);
             
             
             setIsModalOpen(false);
@@ -68,14 +74,10 @@ function ClanDashboard() {
         const confirmDelete = confirm("Apakah Anda yakin ingin menghapus Clan ini?");
         if (!confirmDelete) return;
 
-        console.log("leaderId");
-        console.log(myClan.leaderUserId);
-        
         
         try {
             const payloadToSend = {
                 id: myClan.id,
-                userId: myClan.leaderUserId
             };
 
             await deleteClan(payloadToSend);
