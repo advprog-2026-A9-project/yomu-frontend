@@ -9,6 +9,21 @@ type AuthUser = {
     message: string;
 };
 
+type AuthPayload = {
+    userId?: string;
+    username?: string;
+    role?: string;
+    token?: string;
+    message?: string;
+    data?: {
+        userId?: string;
+        username?: string;
+        role?: string;
+        token?: string;
+        message?: string;
+    };
+};
+
 type LoginCredentials = {
     identifier: string;
     password: string;
@@ -26,6 +41,23 @@ type AuthContextValue = {
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
+const normalizeAuthUser = (payload: AuthPayload, fallbackToken: string | null = null): AuthUser | null => {
+    const data = payload.data ?? payload;
+    const token = data.token ?? payload.token ?? fallbackToken;
+
+    if (!token) {
+        return null;
+    }
+
+    return {
+        userId: data.userId ?? payload.userId ?? "",
+        username: data.username ?? payload.username ?? "",
+        role: data.role ?? payload.role ?? "USER",
+        token,
+        message: payload.message ?? data.message ?? "",
+    };
+};
+
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const [user, setUser] = useState<AuthUser | null>(null);
     const [loading, setLoading] = useState(true);
@@ -41,7 +73,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
         try {
             const currentUser = await getCurrentUser(token);
-            setUser({ ...currentUser, token });
+            const normalizedUser = normalizeAuthUser(currentUser, token);
+
+            if (!normalizedUser) {
+                throw new Error("Token tidak valid");
+            }
+
+            setUser(normalizedUser);
         } catch {
             localStorage.removeItem("token");
             setUser(null);
@@ -56,8 +94,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     const login = async (credentials: LoginCredentials) => {
         const response = await loginUser(credentials);
-        localStorage.setItem("token", response.token);
-        setUser(response);
+        const normalizedUser = normalizeAuthUser(response);
+
+        if (!normalizedUser?.token) {
+            throw new Error("Token login tidak ditemukan pada response API");
+        }
+
+        localStorage.setItem("token", normalizedUser.token);
+        setUser(normalizedUser);
     };
 
     const logout = () => {
