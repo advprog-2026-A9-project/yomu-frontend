@@ -5,6 +5,7 @@ function Home() {
     const { user, loading, isAuthenticated, logout } = useAuth();
     const navigate = useNavigate();
 
+
     // Fungsi untuk menghapus sesi
     const handleLogout = () => {
         logout();

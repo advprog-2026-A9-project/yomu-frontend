@@ -53,6 +53,7 @@ export interface ClanResponse {
 export interface MyClanResponse extends ClanResponse {
     role: string;
     members: number;
+    memberList: String[];
 }
 
 export async function createClan(data: CreateClanPayload): Promise<any> {
@@ -74,6 +75,26 @@ export async function createClan(data: CreateClanPayload): Promise<any> {
     return response.json();
 }
 
+export async function updateClan(clanId: String, data: CreateClanPayload): Promise<any> {
+    const token = localStorage.getItem("token");
+    const response = await fetchWithTimeout(`${API_BASE}/${clanId}/edit`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            ...(token && { Authorization: `Bearer ${token}` }),
+        },
+        body: JSON.stringify(data)
+    })
+
+    if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText || 'Gagal mengedit clan');
+    }
+
+    return response.json();
+
+}
+
 export async function getAllClans(): Promise<ClanResponse[]> {
     const response = await fetchWithTimeout(`${API_BASE}`, {
         method: "GET",
@@ -89,6 +110,7 @@ export async function getAllClans(): Promise<ClanResponse[]> {
 
     return response.json();
 }
+
 
 export async function getMyClan(): Promise<MyClanResponse | null> {
     const token = localStorage.getItem("token");
@@ -164,7 +186,14 @@ export interface LeaderboardByTier {
 }
 
 export async function getLeaderboard(): Promise<LeaderboardByTier[]> {
-    const response = await fetchWithTimeout(`${API_BASE}/leaderboard`);
+    const token = localStorage.getItem("token");
+    const response = await fetchWithTimeout(`${API_BASE}/leaderboard`, {
+        method: "GET",
+        headers: {
+            "Content-Type": "application/json",
+            ...(token && { Authorization: `Bearer ${token}` }),
+        },
+    });
 
     if (!response.ok) {
         throw new Error('Gagal mengambil leaderboard');
@@ -172,6 +201,7 @@ export async function getLeaderboard(): Promise<LeaderboardByTier[]> {
 
     return response.json();
 }
+
 
 export async function endSeason(): Promise<string> {
     const token = localStorage.getItem("token");
@@ -189,3 +219,4 @@ export async function endSeason(): Promise<string> {
 
     return response.text();
 }
+
