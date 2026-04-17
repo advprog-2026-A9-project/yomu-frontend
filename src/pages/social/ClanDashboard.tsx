@@ -1,13 +1,6 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { createClan, deleteClan, getMyClan, leaveClan, updateClan } from '../../services/socialAPI';
-import { useAuth } from "../../context/AuthContext.tsx";
-
-interface MemberData {
-    userId: string;
-    username: string;
-    role: string;
-}
+import { createClan, deleteClan } from '../../services/socialAPI';
 
 interface ClanData {
     id: string;
@@ -19,15 +12,14 @@ interface ClanData {
 
 function ClanDashboard() {
     const navigate = useNavigate();
-    const [myClan, setMyClan] = useState<ClanData | null>(null);
-    const [members, setMembers] = useState<MemberData[]>([]);
-    const { isAuthenticated, loading } = useAuth();
-    // State Modal
-    const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-    const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
-    const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
 
-    // State Form Draft
+    useEffect(() => {
+        const token = localStorage.getItem("token");
+        if (!token) {
+            navigate("/login");
+        }
+    }, [navigate]);
+
     const [draft, setDraft] = useState({
         name: "",
         description: ""
@@ -76,8 +68,24 @@ function ClanDashboard() {
         if (!draft.name.trim()) return alert("Nama clan wajib diisi!");
 
         try {
-            await createClan(draft);
-            setIsCreateModalOpen(false);
+            const payloadToSend = {
+                name: draft.name,
+                description: draft.description,
+            };
+
+            const created = await createClan(payloadToSend);
+            
+            setMyClan({
+                id: created.id,
+                name: created.name,
+                description: created.description,
+                leaderUserId: created.leaderUserId,
+                role: "Ketua",
+                members: 1
+            });
+            
+            
+            setIsModalOpen(false);
             setDraft({ name: "", description: "" });
             loadData();
         } catch (error) {
@@ -105,15 +113,14 @@ function ClanDashboard() {
         if (!myClan) return;
         const isLeader = myClan.role === 'Ketua';
 
+        
         try {
-            if (isLeader) {
-                await deleteClan({ id: myClan.id });
-                alert("Clan berhasil dihapus.");
-            } else {
-                await leaveClan({ id: myClan.id });
-                alert("Berhasil keluar dari clan.");
-            }
-            setIsConfirmModalOpen(false);
+            const payloadToSend = {
+                id: myClan.id,
+            };
+
+            await deleteClan(payloadToSend);
+            
             setMyClan(null);
             setMembers([]);
         } catch (error) {
