@@ -39,6 +39,23 @@ export interface deleteClanPayload {
     id: string;
 }
 
+export interface LeaveClanPayload {
+    id: string;
+}
+
+export interface ClanResponse {
+    id: string;
+    name: string;
+    description: string;
+    leaderUserId: string;
+}
+
+export interface MyClanResponse extends ClanResponse {
+    role: string;
+    members: number;
+    memberList: String[];
+}
+
 export async function createClan(data: CreateClanPayload): Promise<any> {
     const token = localStorage.getItem("token");
     const response = await fetchWithTimeout(`${API_BASE}`, {
@@ -53,6 +70,65 @@ export async function createClan(data: CreateClanPayload): Promise<any> {
     if (!response.ok) {
         const errorText = await response.text();
         throw new Error(errorText || 'Gagal membuat clan');
+    }
+
+    return response.json();
+}
+
+export async function updateClan(clanId: String, data: CreateClanPayload): Promise<any> {
+    const token = localStorage.getItem("token");
+    const response = await fetchWithTimeout(`${API_BASE}/${clanId}/edit`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            ...(token && { Authorization: `Bearer ${token}` }),
+        },
+        body: JSON.stringify(data)
+    })
+
+    if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText || 'Gagal mengedit clan');
+    }
+
+    return response.json();
+
+}
+
+export async function getAllClans(): Promise<ClanResponse[]> {
+    const response = await fetchWithTimeout(`${API_BASE}`, {
+        method: "GET",
+        headers: {
+            "Content-Type": "application/json",
+        },
+    });
+
+    if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText || 'Gagal mengambil daftar clan');
+    }
+
+    return response.json();
+}
+
+
+export async function getMyClan(): Promise<MyClanResponse | null> {
+    const token = localStorage.getItem("token");
+    const response = await fetchWithTimeout(`${API_BASE}/me`, {
+        method: "GET",
+        headers: {
+            "Content-Type": "application/json",
+            ...(token && { Authorization: `Bearer ${token}` }),
+        },
+    });
+
+    if (response.status === 404) {
+        return null;
+    }
+
+    if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText || 'Gagal mengambil clan user');
     }
 
     return response.json();
@@ -75,3 +151,72 @@ export async function deleteClan(data: deleteClanPayload): Promise<any> {
 
     return response.text();
 }
+
+export async function leaveClan(data: LeaveClanPayload): Promise<any> {
+    const token = localStorage.getItem("token");
+    const response = await fetchWithTimeout(`${API_BASE}/${data.id}/leave`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            ...(token && { Authorization: `Bearer ${token}` }),
+        },
+    });
+
+    if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText || 'Gagal keluar dari clan');
+    }
+
+    return response.text();
+}
+
+// Leaderboard types
+export interface LeaderboardEntry {
+    clanId: string;
+    clanName: string;
+    tier: string;
+    score: number;
+    rank: number;
+    memberCount: number;
+}
+
+export interface LeaderboardByTier {
+    tier: string;
+    entries: LeaderboardEntry[];
+}
+
+export async function getLeaderboard(): Promise<LeaderboardByTier[]> {
+    const token = localStorage.getItem("token");
+    const response = await fetchWithTimeout(`${API_BASE}/leaderboard`, {
+        method: "GET",
+        headers: {
+            "Content-Type": "application/json",
+            ...(token && { Authorization: `Bearer ${token}` }),
+        },
+    });
+
+    if (!response.ok) {
+        throw new Error('Gagal mengambil leaderboard');
+    }
+
+    return response.json();
+}
+
+
+export async function endSeason(): Promise<string> {
+    const token = localStorage.getItem("token");
+    const response = await fetchWithTimeout(`${API_BASE}/admin/end-season`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            ...(token && { Authorization: `Bearer ${token}` }),
+        },
+    });
+
+    if (!response.ok) {
+        throw new Error('Gagal mengakhiri season');
+    }
+
+    return response.text();
+}
+
