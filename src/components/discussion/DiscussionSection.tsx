@@ -4,11 +4,13 @@ import { discussionService, CommentData } from "../../services/DiscussionAPI";
 interface DiscussionProps {
   readingId: string;
   currentUserId: string;
+  currentUserRole?: string; 
 }
 
 const DiscussionSection: React.FC<DiscussionProps> = ({
   readingId,
   currentUserId,
+  currentUserRole, 
 }) => {
   const [comments, setComments] = useState<CommentData[]>([]);
   const [newContent, setNewContent] = useState("");
@@ -16,8 +18,6 @@ const DiscussionSection: React.FC<DiscussionProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
-  
-  // State untuk melacak mode edit
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editContent, setEditContent] = useState("");
 
@@ -47,13 +47,11 @@ const DiscussionSection: React.FC<DiscussionProps> = ({
         currentUserId,
         replyingTo
       );
-
       setComments((prev) => [...prev, newComment]);
       setNewContent("");
       setReplyingTo(null);
     } catch (error) {
       alert("Gagal mengirim komentar");
-      console.error(error);
     } finally {
       setIsSubmitting(false);
     }
@@ -66,7 +64,6 @@ const DiscussionSection: React.FC<DiscussionProps> = ({
       setComments((prev) => prev.filter((c) => c.id !== commentId));
     } catch (error) {
       alert("Gagal menghapus komentar");
-      console.error(error);
     }
   };
 
@@ -85,14 +82,33 @@ const DiscussionSection: React.FC<DiscussionProps> = ({
       setEditingId(null);
     } catch (error) {
       alert("Gagal mengedit komentar");
-      console.error(error);
+    }
+  };
+
+
+  const handleReaction = async (commentId: string, type: 'UPVOTE' | 'DOWNVOTE' | 'EMOJI', emojiCode?: string) => {
+    try {
+      await discussionService.addReaction(commentId, currentUserId, type, emojiCode);
+
+      alert(`Reaksi ${emojiCode || type} berhasil ditambahkan!`);
+    } catch (error) {
+      alert("Gagal mengirim reaksi");
+    }
+  };
+
+  const handleModerate = async (commentId: string) => {
+    if (!window.confirm("ADMIN: Yakin ingin menghapus paksa komentar ini secara permanen?")) return;
+    try {
+      await discussionService.moderateCommentAdmin(commentId);
+      setComments((prev) => prev.filter((c) => c.id !== commentId));
+    } catch (error) {
+      alert("Gagal memoderasi komentar. Pastikan Anda memiliki akses Admin.");
     }
   };
 
   const rootComments = comments.filter((c) => !c.parentId);
   const getReplies = (parentId: string) => comments.filter((c) => c.parentId === parentId);
 
-  // Komponen untuk me-render per-item komentar agar UI lebih rapi
   const renderCommentItem = (comment: CommentData, isReply: boolean = false) => {
     const isOwner = comment.userId === currentUserId;
     const isEditing = editingId === comment.id;
@@ -124,27 +140,49 @@ const DiscussionSection: React.FC<DiscussionProps> = ({
         ) : (
           <>
             <p className={`text-gray-300 text-${isReply ? 'xs' : 'sm'} leading-relaxed mb-3`}>{comment.content}</p>
-            <div className="flex gap-4 items-center">
-              {!isReply && (
-                <button 
-                  onClick={() => { setReplyingTo(comment.id); setEditingId(null); }}
-                  className="text-xs font-semibold text-gray-400 hover:text-blue-400 transition"
-                >
-                  ↩ Balas
-                </button>
-              )}
-              
-              {/* Fitur Edit & Hapus Hanya Tersedia Jika CurrentUser adalah Pemilik Komentar */}
-              {isOwner && (
-                <>
-                  <button onClick={() => startEdit(comment)} className="text-xs font-semibold text-yellow-500 hover:text-yellow-400 transition">
-                    ✎ Edit
+            
+            <div className="flex flex-wrap gap-4 items-center justify-between border-t border-gray-700/50 pt-2 mt-2">
+              <div className="flex gap-3 items-center">
+                {}
+                <div className="flex space-x-1">
+                  <button onClick={() => handleReaction(comment.id, 'UPVOTE')} title="Upvote" className="text-sm p-1 rounded hover:bg-gray-700 transition">👍</button>
+                  <button onClick={() => handleReaction(comment.id, 'DOWNVOTE')} title="Downvote" className="text-sm p-1 rounded hover:bg-gray-700 transition">👎</button>
+                  <button onClick={() => handleReaction(comment.id, 'EMOJI', '🔥')} title="Fire" className="text-sm p-1 rounded hover:bg-gray-700 transition">🔥</button>
+                </div>
+
+                {!isReply && (
+                  <button 
+                    onClick={() => { setReplyingTo(comment.id); setEditingId(null); }}
+                    className="text-xs font-semibold text-gray-400 hover:text-blue-400 transition"
+                  >
+                    ↩ Balas
                   </button>
-                  <button onClick={() => handleDelete(comment.id)} className="text-xs font-semibold text-red-500 hover:text-red-400 transition">
-                    🗑 Hapus
+                )}
+              </div>
+
+              <div className="flex gap-3 items-center">
+                {}
+                {isOwner && (
+                  <>
+                    <button onClick={() => startEdit(comment)} className="text-xs font-semibold text-yellow-500 hover:text-yellow-400 transition">
+                      ✎ Edit
+                    </button>
+                    <button onClick={() => handleDelete(comment.id)} className="text-xs font-semibold text-red-500 hover:text-red-400 transition">
+                      🗑 Hapus
+                    </button>
+                  </>
+                )}
+
+                {}
+                {currentUserRole === 'ADMIN' && (
+                  <button 
+                    onClick={() => handleModerate(comment.id)} 
+                    className="text-xs font-bold text-white bg-red-600/80 px-2 py-1 rounded hover:bg-red-600 transition"
+                  >
+                    🛡️ Moderasi
                   </button>
-                </>
-              )}
+                )}
+              </div>
             </div>
           </>
         )}
@@ -168,7 +206,6 @@ const DiscussionSection: React.FC<DiscussionProps> = ({
             <div key={comment.id} className="space-y-3">
               {renderCommentItem(comment, false)}
 
-              {/* Render Balasan (Nested Threading) */}
               {getReplies(comment.id).length > 0 && (
                 <div className="ml-8 border-l-2 border-gray-700 pl-4">
                   {getReplies(comment.id).map((reply) => renderCommentItem(reply, true))}

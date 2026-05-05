@@ -24,7 +24,6 @@ function TestDiscussionPage() {
         </h1>
 
         <p className="text-gray-400 mb-8">
-          Halaman ini untuk simulasi integrasi Milestone 50%.
         </p>
 
         <div className="p-8 bg-gray-800 rounded-xl border border-gray-700 mb-8">
