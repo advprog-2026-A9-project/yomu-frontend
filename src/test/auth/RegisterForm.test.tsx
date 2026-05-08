@@ -27,4 +27,12 @@ describe('RegisterForm', () => {
         await userEvent.click(screen.getByText('Daftar'));
         expect(screen.getByText('Username harus diisi')).toBeInTheDocument();
     });
+
+    test('menampilkan error jika format email tidak valid', async () => {
+        render(<RegisterForm />);
+        await userEvent.type(screen.getByPlaceholderText('Username'), 'mizukitest');
+        await userEvent.type(screen.getByPlaceholderText('Email (opsional jika pakai HP)'), 'invalid-email');
+        await userEvent.click(screen.getByText('Daftar'));
+        expect(screen.getByText('Format email tidak valid. Contoh: example@gmail.com')).toBeInTheDocument();
+    });
 });
