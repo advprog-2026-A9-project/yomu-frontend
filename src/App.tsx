@@ -1,6 +1,8 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Home from './pages/Home';
-import Reading from './pages/reading/Reading';
+import ReadingList from './pages/reading/ReadingList.tsx';
+import ReadingDetail from './pages/reading/ReadingDetail.tsx';
+import ReadingQuiz from './pages/reading/ReadingQuiz.tsx';
 import RegisterPage from './pages/auth/RegisterPage';
 import LoginPage from './pages/auth/LoginPage';
 import ClanDashboard from './pages/social/ClanDashboard';
@@ -11,7 +13,11 @@ function App() {
     <Router>
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="/readings" element={<Reading />} />
+
+        <Route path="/readings" element={<ReadingList />} />
+        <Route path="/readings/:id" element={<ReadingDetail />} />
+        <Route path="/readings/:id/quiz" element={<ReadingQuiz />} />
+
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/clan" element={<ClanDashboard />} />
