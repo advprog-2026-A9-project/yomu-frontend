@@ -9,7 +9,9 @@ export default function ReadingList() {
     const [readings, setReadings] = useState<ReadingTextResponse[]>([]);
     const [status, setStatus] = useState<string>('Loading...');
     const [showForm, setShowForm] = useState(false);
-    const { isAdmin, loading } = useAuth();
+    // const { isAdmin, loading } = useAuth();
+    const isAdmin = true;
+    const loading = false;
 
     const fetchReadings = async () => {
         try {

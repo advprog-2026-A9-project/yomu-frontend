@@ -4,6 +4,11 @@ const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8080";
 // TYPES (DTO Interfaces)
 // ==========================================
 
+export type CategoryResponse = {
+    id: number;
+    name: string;
+};
+
 export type ReadingTextResponse = {
     id: number;
     title: string;
@@ -17,7 +22,8 @@ export type ReadingTextRequest = {
     categoryId: number;
 };
 
-// Tambahan tipe data untuk fitur Kuis
+// --- Tipe Data untuk Kuis ---
+
 export type QuizOptionResponse = {
     id: number;
     optionText: string;
@@ -29,6 +35,18 @@ export type QuizQuestionResponse = {
     options: QuizOptionResponse[];
 };
 
+// Request untuk Admin membuat Kuis baru
+export type QuizOptionRequest = {
+    optionText: string;
+    isCorrect: boolean; // Menandakan apakah opsi ini adalah jawaban yang benar
+};
+
+export type QuizQuestionRequest = {
+    questionText: string;
+    options: QuizOptionRequest[];
+};
+
+// Request & Response Pengerjaan Kuis Pelajar
 export type QuizSubmissionRequest = {
     // Key: ID Pertanyaan, Value: ID Opsi Jawaban
     answers: Record<number, number>;
@@ -64,18 +82,51 @@ const getAuthHeaders = () => {
 };
 
 // ==========================================
-// API FUNCTIONS
+// API FUNCTIONS : CATEGORY
+// ==========================================
+
+export const getAllCategories = async (): Promise<CategoryResponse[]> => {
+    const response = await fetch(`${BASE_URL}/api/categories`, { // Sesuaikan endpoint dengan backend jika berbeda
+        headers: {
+            ...getAuthHeaders(),
+        }
+    });
+
+    if (!response.ok) {
+        throw new Error(await parseErrorMessage(response, "Gagal mengambil daftar kategori"));
+    }
+
+    return response.json();
+};
+
+
+// ==========================================
+// API FUNCTIONS : READING TEXTS
 // ==========================================
 
 export const getAllTexts = async (): Promise<ReadingTextResponse[]> => {
     const response = await fetch(`${BASE_URL}/api/reading-texts`, {
         headers: {
-            ...getAuthHeaders(), // Ditambahkan agar Backend bisa mengenali user/role
+            ...getAuthHeaders(),
         }
     });
 
     if (!response.ok) {
         throw new Error(await parseErrorMessage(response, "Gagal mengambil data bacaan"));
+    }
+
+    return response.json();
+};
+
+export const getReadingById = async (id: string | number): Promise<ReadingTextResponse> => {
+    const response = await fetch(`${BASE_URL}/api/reading-texts/${id}`, {
+        headers: {
+            ...getAuthHeaders(),
+        },
+    });
+
+    if (!response.ok) {
+        throw new Error(await parseErrorMessage(response, "Teks bacaan tidak ditemukan"));
     }
 
     return response.json();
@@ -111,21 +162,9 @@ export const deleteText = async (id: number): Promise<void> => {
     }
 };
 
-// --- TAMBAHAN BARU UNTUK FITUR DETAIL & KUIS ---
-
-export const getReadingById = async (id: string | number): Promise<ReadingTextResponse> => {
-    const response = await fetch(`${BASE_URL}/api/reading-texts/${id}`, {
-        headers: {
-            ...getAuthHeaders(),
-        },
-    });
-
-    if (!response.ok) {
-        throw new Error(await parseErrorMessage(response, "Teks bacaan tidak ditemukan"));
-    }
-
-    return response.json();
-};
+// ==========================================
+// API FUNCTIONS : QUIZ & QUESTIONS
+// ==========================================
 
 export const getQuestionsByReadingId = async (id: string | number): Promise<QuizQuestionResponse[]> => {
     const response = await fetch(`${BASE_URL}/api/reading-texts/${id}/questions`, {
@@ -139,6 +178,38 @@ export const getQuestionsByReadingId = async (id: string | number): Promise<Quiz
     }
 
     return response.json();
+};
+
+// ADMIN ONLY: Menambah Pertanyaan Baru ke suatu Teks Bacaan
+export const addQuestionToReading = async (readingId: string | number, payload: QuizQuestionRequest): Promise<QuizQuestionResponse> => {
+    const response = await fetch(`${BASE_URL}/api/reading-texts/${readingId}/questions`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            ...getAuthHeaders(),
+        },
+        body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+        throw new Error(await parseErrorMessage(response, "Gagal menambahkan pertanyaan kuis"));
+    }
+
+    return response.json();
+};
+
+// ADMIN ONLY: Menghapus Pertanyaan tertentu
+export const deleteQuestion = async (readingId: string | number, questionId: string | number): Promise<void> => {
+    const response = await fetch(`${BASE_URL}/api/reading-texts/${readingId}/questions/${questionId}`, {
+        method: "DELETE",
+        headers: {
+            ...getAuthHeaders(),
+        },
+    });
+
+    if (!response.ok) {
+        throw new Error(await parseErrorMessage(response, "Gagal menghapus pertanyaan kuis"));
+    }
 };
 
 export const submitQuiz = async (id: string | number, payload: QuizSubmissionRequest): Promise<QuizSubmissionResponse> => {
