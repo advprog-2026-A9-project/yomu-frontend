@@ -1,3 +1,149 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+:root {
+	color-scheme: dark;
+	--bg: 10 13 32;
+	--bg-soft: 20 25 52;
+	--surface: 28 35 72;
+	--surface-muted: 34 44 86;
+	--border: 127 142 255;
+	--text: 239 242 255;
+	--text-muted: 181 190 232;
+	--primary: 96 112 255;
+	--primary-2: 108 77 255;
+	--accent: 255 198 74;
+	--tier-bronze: 184 115 51;
+	--tier-silver: 185 194 213;
+	--tier-gold: 255 210 87;
+	--tier-diamond: 116 224 255;
+}
+
+html,
+body,
+#root {
+	min-height: 100%;
+}
+
+body {
+	margin: 0;
+	font-family: "Plus Jakarta Sans", "Manrope", "Segoe UI", sans-serif;
+	color: rgb(var(--text));
+	background:
+		radial-gradient(circle at 15% 20%, rgba(89, 111, 255, 0.22), transparent 28%),
+		radial-gradient(circle at 90% 15%, rgba(255, 198, 74, 0.16), transparent 26%),
+		radial-gradient(circle at 50% 100%, rgba(81, 57, 255, 0.26), transparent 45%),
+		rgb(var(--bg));
+}
+
+* {
+	box-sizing: border-box;
+}
+
+@layer components {
+	.yomu-shell {
+		@apply min-h-screen text-slate-100;
+	}
+
+	.yomu-container {
+		@apply mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8;
+	}
+
+	.yomu-glass {
+		@apply border border-white/10 bg-white/5 backdrop-blur-xl;
+		box-shadow: 0 20px 50px rgba(10, 13, 32, 0.35);
+	}
+
+	.yomu-card {
+		@apply yomu-glass rounded-2xl p-5 transition duration-300;
+	}
+
+	.yomu-card-hover {
+		@apply hover:-translate-y-1 hover:border-indigo-300/50 hover:bg-white/10;
+	}
+
+	.yomu-badge {
+		@apply inline-flex items-center rounded-full border border-white/20 bg-white/5 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-slate-200;
+	}
+
+	.yomu-title {
+		@apply text-balance text-3xl font-extrabold leading-tight sm:text-4xl lg:text-5xl;
+	}
+
+	.yomu-subtitle {
+		@apply text-sm text-indigo-100/80 sm:text-base;
+	}
+
+	.yomu-button-primary {
+		@apply inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-indigo-500 to-violet-500 px-5 py-3 text-sm font-bold text-white transition duration-300 hover:scale-[1.02] hover:shadow-lg hover:shadow-indigo-600/30;
+	}
+
+	.yomu-button-secondary {
+		@apply inline-flex items-center justify-center rounded-xl border border-white/20 bg-white/10 px-5 py-3 text-sm font-semibold text-slate-100 transition hover:bg-white/20;
+	}
+
+	.yomu-progress-track {
+		@apply relative h-2 overflow-hidden rounded-full bg-white/10;
+	}
+
+	.yomu-progress-fill {
+		@apply h-full rounded-full bg-gradient-to-r from-indigo-400 to-violet-400;
+	}
+
+	.yomu-grid-noise {
+		background-image:
+			linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+			linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+		background-size: 34px 34px;
+		background-position: -1px -1px;
+	}
+}
+
+@keyframes float-up {
+	0%,
+	100% {
+		transform: translateY(0px);
+	}
+	50% {
+		transform: translateY(-8px);
+	}
+}
+
+@keyframes fade-rise {
+	from {
+		opacity: 0;
+		transform: translateY(10px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0px);
+	}
+}
+
+.animate-float-up {
+	animation: float-up 4s ease-in-out infinite;
+}
+
+.animate-fade-rise {
+	animation: fade-rise 0.5s ease-out both;
+}
+@layer utilities {
+	.scrollbar-hide::-webkit-scrollbar {
+		display: none;
+	}
+	.scrollbar-hide {
+		-ms-overflow-style: none;
+		scrollbar-width: none;
+	}
+
+	.scrollbar-thin::-webkit-scrollbar {
+		width: 4px;
+	}
+	.scrollbar-thin::-webkit-scrollbar-track {
+		@apply bg-white/5;
+	}
+	.scrollbar-thin::-webkit-scrollbar-thumb {
+		@apply bg-indigo-500/20 rounded-full hover:bg-indigo-500/40 transition-colors;
+	}
+}

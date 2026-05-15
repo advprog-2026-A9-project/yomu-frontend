@@ -7,6 +7,8 @@ type AuthUser = {
     role: string;
     token: string | null;
     message: string;
+    clanId?: string | null;
+    clanTier?: string | null;
 };
 
 type AuthPayload = {
@@ -37,6 +39,7 @@ type AuthContextValue = {
     login: (credentials: LoginCredentials) => Promise<void>;
     logout: () => void;
     refreshUser: () => Promise<void>;
+    setClanInfo: (clanId: string | null, clanTier: string | null) => void;
 };
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
@@ -58,9 +61,25 @@ const normalizeAuthUser = (payload: AuthPayload, fallbackToken: string | null = 
     };
 };
 
+import { getMyClan } from "../services/socialAPI";
+
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const [user, setUser] = useState<AuthUser | null>(null);
     const [loading, setLoading] = useState(true);
+
+    const setClanInfo = (clanId: string | null, clanTier: string | null) => {
+        setUser(prev => prev ? { ...prev, clanId, clanTier } : null);
+    };
+
+    const fetchClanInfo = async () => {
+        try {
+            const myClan = await getMyClan();
+            if (!myClan) return { clanId: null, clanTier: null };
+            return { clanId: myClan.id, clanTier: myClan.tier };
+        } catch {
+            return { clanId: null, clanTier: null };
+        }
+    };
 
     const refreshUser = async () => {
         const token = localStorage.getItem("token");
@@ -79,7 +98,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                 throw new Error("Token tidak valid");
             }
 
-            setUser(normalizedUser);
+            // Fetch clan info once during refresh
+            const clanInfo = await fetchClanInfo();
+            setUser({ ...normalizedUser, ...clanInfo });
         } catch {
             localStorage.removeItem("token");
             setUser(null);
@@ -101,7 +122,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
 
         localStorage.setItem("token", normalizedUser.token);
-        setUser(normalizedUser);
+
+        // Fetch clan info once after login
+        const clanInfo = await fetchClanInfo();
+        setUser({ ...normalizedUser, ...clanInfo });
     };
 
     const logout = () => {
@@ -119,6 +143,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                 login,
                 logout,
                 refreshUser,
+                setClanInfo,
             }}
         >
             {children}
