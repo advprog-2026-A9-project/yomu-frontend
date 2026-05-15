@@ -104,7 +104,7 @@ export default function ReadingQuiz() {
                         {result.score}
                     </div>
                     <p className="mb-8 text-gray-400">
-                        {result.message || 'Hasil ini telah dikirim ke Modul Liga dan Achievement.'}
+                        {result.message || 'Hasil ini telah dikirim ke Modul Liga Clan dan Achievement.'}
                     </p>
                     <button
                         onClick={() => navigate('/readings')}
