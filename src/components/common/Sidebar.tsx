@@ -22,7 +22,6 @@ type MenuItem = {
 const menuItems: MenuItem[] = [
   { label: 'Dashboard', path: '/', icon: Gauge },
   { label: 'Bacaan', path: '/readings', icon: BookOpen },
-  { label: 'Daily Missions', path: '/missions', icon: Target },
   { label: 'Achievements', path: '/achievements', icon: Award },
   { label: 'Clan', path: '/clan', icon: Shield },
   { label: 'Leaderboard', path: '/leaderboard', icon: Trophy },

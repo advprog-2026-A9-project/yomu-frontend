@@ -1,5 +1,15 @@
 const API_BASE = "http://localhost:8080/api/clans";
 
+async function parseJsonResponse<T>(response: Response, fallback: T): Promise<T> {
+    const text = await response.text();
+
+    if (!text.trim()) {
+        return fallback;
+    }
+
+    return JSON.parse(text) as T;
+}
+
 async function fetchWithTimeout(
     url: string,
     options: RequestInit = {},
@@ -54,7 +64,10 @@ export interface ClanResponse {
     leaderUserId: string;
     tier: string;
     score: number;
+    effectiveScore?: number;
     memberCount: number;
+    activeBuffs?: ClanModifier[];
+    debuffs?: ClanModifier[];
 }
 
 export interface MyClanResponse {
@@ -102,6 +115,33 @@ export interface ClanDetailResponse {
     debuffs: ClanModifier[];
 }
 
+export interface SeasonStatusResponse {
+    seasonNumber: number;
+    status: string;
+}
+
+export interface SeasonClanSummary {
+    clanId: string;
+    clanName: string;
+    tier: string;
+    score: number;
+    memberCount: number;
+}
+
+export interface SeasonTierSummary {
+    tier: string;
+    topClans: SeasonClanSummary[];
+}
+
+export interface SeasonEndResponse {
+    processedSeasonNumber: number;
+    newSeasonNumber: number;
+    promotedClans: SeasonClanSummary[];
+    relegatedClans: SeasonClanSummary[];
+    unchangedClans: SeasonClanSummary[];
+    tierSummaries: SeasonTierSummary[];
+}
+
 export async function createClan(data: CreateClanPayload): Promise<any> {
     const token = localStorage.getItem("token");
     const response = await fetchWithTimeout(`${API_BASE}`, {
@@ -118,7 +158,7 @@ export async function createClan(data: CreateClanPayload): Promise<any> {
         throw new Error(errorText || 'Gagal membuat clan');
     }
 
-    return response.json();
+    return parseJsonResponse(response, null);
 }
 
 export async function updateClan(clanId: String, data: CreateClanPayload): Promise<any> {
@@ -137,7 +177,7 @@ export async function updateClan(clanId: String, data: CreateClanPayload): Promi
         throw new Error(errorText || 'Gagal mengedit clan');
     }
 
-    return response.json();
+    return parseJsonResponse(response, null);
 
 }
 
@@ -156,7 +196,7 @@ export async function getAllClans(): Promise<ClanResponse[]> {
         throw new Error(errorText || 'Gagal mengambil daftar clan');
     }
 
-    return response.json();
+    return parseJsonResponse(response, []);
 }
 
 
@@ -179,7 +219,7 @@ export async function getMyClan(): Promise<MyClanResponse | null> {
         throw new Error(errorText || 'Gagal mengambil clan user');
     }
 
-    return response.json();
+    return parseJsonResponse<MyClanResponse | null>(response, null);
 }
 
 export async function getClanDetail(clanId: string): Promise<ClanDetailResponse> {
@@ -196,7 +236,7 @@ export async function getClanDetail(clanId: string): Promise<ClanDetailResponse>
         throw new Error('Gagal mengambil detail clan');
     }
 
-    return response.json();
+    return parseJsonResponse(response, null as unknown as ClanDetailResponse);
 }
 
 export async function deleteClan(data: deleteClanPayload): Promise<any> {
@@ -283,11 +323,28 @@ export async function getLeaderboard(): Promise<LeaderboardByTier[]> {
         throw new Error('Gagal mengambil leaderboard');
     }
 
-    return response.json();
+    return parseJsonResponse(response, []);
 }
 
 
-export async function endSeason(): Promise<string> {
+export async function getCurrentSeason(): Promise<SeasonStatusResponse> {
+    const token = localStorage.getItem("token");
+    const response = await fetchWithTimeout("http://localhost:8080/api/seasons/current", {
+        method: "GET",
+        headers: {
+            "Content-Type": "application/json",
+            ...(token && { Authorization: `Bearer ${token}` }),
+        },
+    });
+
+    if (!response.ok) {
+        throw new Error('Gagal mengambil status season');
+    }
+
+    return parseJsonResponse(response, { seasonNumber: 1, status: 'Active' });
+}
+
+export async function endSeason(): Promise<SeasonEndResponse> {
     const token = localStorage.getItem("token");
     const response = await fetchWithTimeout("http://localhost:8080/api/seasons/end", {
         method: "POST",
@@ -301,7 +358,14 @@ export async function endSeason(): Promise<string> {
         throw new Error('Gagal mengakhiri season');
     }
 
-    return response.text();
+    return parseJsonResponse(response, {
+        processedSeasonNumber: 1,
+        newSeasonNumber: 2,
+        promotedClans: [],
+        relegatedClans: [],
+        unchangedClans: [],
+        tierSummaries: [],
+    });
 }
 export async function kickMember(clanId: string, memberId: string): Promise<string> {
     const token = localStorage.getItem("token");

@@ -1,10 +1,10 @@
-import { useNavigate } from 'react-router-dom';
+import { Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import LandingPage from './landing/LandingPage';
 import DashboardHome from './dashboard/DashboardHome';
 
 function Home() {
-    const { user, loading, isAuthenticated, logout } = useAuth();
+    const { user, loading, isAuthenticated, isAdmin, logout } = useAuth();
     const navigate = useNavigate();
 
     const handleLogout = () => {
@@ -25,6 +25,10 @@ function Home() {
 
     if (!isAuthenticated) {
         return <LandingPage />;
+    }
+
+    if (isAdmin) {
+        return <Navigate to="/admin" replace />;
     }
 
     return (
