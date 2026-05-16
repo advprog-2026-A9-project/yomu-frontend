@@ -4,23 +4,15 @@ import { useState, useEffect } from 'react';
 import Sidebar from '../../components/common/Sidebar';
 import { GlassCard, ProgressBar, SkeletonCard } from '../../components/common/UI';
 import MissionCard from '../../components/gamification/MissionCard';
-import AchievementBadge from '../../components/gamification/AchievementBadge';
 import ReadingCard from '../../components/reading/ReadingCard';
-import LeaderboardCard from '../../components/social/LeaderboardCard';
-import { getLeaderboard, getMyClan, MyClanResponse } from '../../services/socialAPI';
+import { getMyClan, MyClanResponse } from '../../services/socialAPI';
 import { useAuth } from '../../context/AuthContext';
-import { getTodayMissions, getMyAchievements, DailyMissionProgress, AchievementProgress } from '../../services/gamificationAPI';
+import { getTodayMissions, DailyMissionProgress } from '../../services/gamificationAPI';
 
 type Activity = {
   title: string;
   timestamp: string;
   type: 'achievement' | 'mission' | 'clan' | 'forum';
-};
-
-type LeaderboardItem = {
-  name: string;
-  score: number;
-  tier: 'Bronze' | 'Silver' | 'Gold' | 'Diamond';
 };
 
 // Hardcoded activity feed remains for now as backend doesn't have it yet
@@ -49,14 +41,9 @@ export default function DashboardHome({
   const { user } = useAuth();
   const [myClan, setMyClan] = useState<MyClanResponse | null>(null);
   const [clanLoading, setClanLoading] = useState(true);
-  const [leaderboardItems, setLeaderboardItems] = useState<LeaderboardItem[]>([]);
-  const [leaderboardLoading, setLeaderboardLoading] = useState(true);
-  const [leaderboardError, setLeaderboardError] = useState<string | null>(null);
 
   const [missions, setMissions] = useState<DailyMissionProgress[]>([]);
   const [missionsLoading, setMissionsLoading] = useState(true);
-  const [myAchievements, setMyAchievements] = useState<AchievementProgress[]>([]);
-  const [achievementsLoading, setAchievementsLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -64,44 +51,26 @@ export default function DashboardHome({
 
       try {
         setClanLoading(true);
-        setLeaderboardLoading(true);
         setMissionsLoading(true);
-        setAchievementsLoading(true);
 
-        const [clanData, leaderboardData, missionData, achievementData] = await Promise.all([
+        const [clanData, missionData] = await Promise.all([
           getMyClan(),
-          getLeaderboard(),
           getTodayMissions(user.userId),
-          getMyAchievements(user.userId)
         ]);
 
         setMyClan(clanData);
-        setLeaderboardItems(
-          leaderboardData
-            .flatMap((tierBoard) => tierBoard.entries.map((entry) => ({
-              name: entry.clanName,
-              score: entry.score,
-              tier: tierBoard.tier as LeaderboardItem['tier'],
-            })))
-            .sort((a, b) => b.score - a.score)
-            .slice(0, 4)
-        );
         setMissions(missionData);
-        setMyAchievements(achievementData);
       } catch (err) {
         console.error("Gagal mengambil data dashboard:", err);
-        setLeaderboardError(err instanceof Error ? err.message : 'Gagal memuat data');
       } finally {
         setClanLoading(false);
-        setLeaderboardLoading(false);
         setMissionsLoading(false);
-        setAchievementsLoading(false);
       }
     };
     fetchData();
   }, [user?.userId]);
 
-  const isLoadingAny = clanLoading || missionsLoading || achievementsLoading || leaderboardLoading || parentLoading;
+  const isLoadingAny = clanLoading || missionsLoading || parentLoading;
 
   return (
     <div className="yomu-shell yomu-grid-noise lg:flex">
@@ -114,11 +83,7 @@ export default function DashboardHome({
             <h1 className="text-2xl font-bold text-white">Welcome back, {username} 👋</h1>
           </div>
           <div className="flex flex-wrap items-center gap-2 text-xs">
-            {isLoadingAny ? (
-              <div className="h-6 w-20 animate-pulse rounded-lg bg-white/10" />
-            ) : (
-              <span className="yomu-badge">Streak 14 hari</span>
-            )}
+            {/* Streak removed */}
           </div>
         </header>
 
@@ -251,109 +216,60 @@ export default function DashboardHome({
           </section>
 
           <section className="grid gap-4 xl:grid-cols-3">
-            <div className="space-y-4 xl:col-span-2">
-              <div className="flex items-center justify-between">
-                <h2 className="text-xl font-bold">Achievement Showcase</h2>
-                <Link to="/achievements" className="text-sm text-indigo-200 hover:text-white">
-                  Lihat koleksi
-                </Link>
-              </div>
-              <div className="grid gap-4 md:grid-cols-3">
-                {achievementsLoading ? (
-                  <>
-                    <SkeletonCard className="h-28" key="ach-s1" />
-                    <SkeletonCard className="h-28" key="ach-s2" />
-                    <SkeletonCard className="h-28" key="ach-s3" />
-                  </>
-                ) : myAchievements.length === 0 ? (
-                  <div className="md:col-span-3 rounded-2xl border border-dashed border-white/10 p-6 text-center text-indigo-100/40">
-                    Belum ada achievement yang terbuka.
-                  </div>
-                ) : (
-                  myAchievements
-                    .filter(a => a.unlocked)
-                    .slice(0, 3)
-                    .map((achievement) => (
-                      <AchievementBadge
-                        key={achievement.achievementId}
-                        title={achievement.achievementName}
-                        rarity={achievement.milestoneThreshold >= 100 ? 'Diamond' : achievement.milestoneThreshold >= 50 ? 'Gold' : 'Silver'}
-                        description={achievement.milestone}
-                      />
-                    ))
-                )}
-              </div>
-            </div>
-            {leaderboardLoading ? (
-              <SkeletonCard />
-            ) : leaderboardError ? (
-              <GlassCard>
-                <p className="text-sm font-semibold text-white">Leaderboard unavailable</p>
-                <p className="mt-2 text-sm text-indigo-100/75">{leaderboardError}</p>
-              </GlassCard>
-            ) : (
-              <LeaderboardCard items={leaderboardItems} />
-            )}
-          </section>
-
-          <section className="grid gap-4 xl:grid-cols-3">
-            <div className="xl:col-span-2">
+            <div className="xl:col-span-3">
               <div className="mb-4 flex items-center justify-between">
                 <h2 className="text-xl font-bold">Continue Reading Queue</h2>
                 <Link to="/readings" className="text-sm text-indigo-200 hover:text-white">
                   Buka library
                 </Link>
               </div>
-              <div className="grid gap-4 md:grid-cols-2">
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                 <ReadingCard title="Logika Argumentasi di Media Sosial" category="Critical Reading" progress={82} />
                 <ReadingCard title="Analisis Data dan Klaim Statistik" category="Data Literacy" progress={41} />
+                <ReadingCard title="Struktur Naratif dalam Jurnalisme" category="Literacy" progress={15} />
               </div>
             </div>
+          </section>
 
-            <GlassCard className="min-h-[280px] flex flex-col">
-              <div className="mb-4 flex items-center justify-between">
-                <h2 className="text-lg font-bold">Activity Feed</h2>
-                <Link to="/discussion-test" className="text-xs text-indigo-200 hover:text-white">
-                  Buka forum
-                </Link>
-              </div>
+          <section className="grid gap-4 xl:grid-cols-3">
+            <div className="xl:col-span-3">
+              <GlassCard className="min-h-[200px] flex flex-col">
+                <div className="mb-4 flex items-center justify-between">
+                  <h2 className="text-lg font-bold">Activity Feed</h2>
+                  <Link to="/forum" className="text-xs text-indigo-200 hover:text-white">
+                    Buka forum
+                  </Link>
+                </div>
 
-              <div className="flex-1">
-                {isLoadingAny ? (
-                  <ul className="space-y-3">
-                    {[1, 2, 3].map((i) => (
-                      <li key={i} className="rounded-xl border border-white/10 bg-white/5 p-3 animate-pulse">
-                        <div className="flex items-center gap-2">
-                          <div className="h-4 w-4 rounded bg-white/20" />
-                          <div className="h-4 w-2/3 rounded bg-white/20" />
+                <div className="flex-1">
+                  {isLoadingAny ? (
+                    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                      {[1, 2, 3, 4].map((i) => (
+                        <div key={i} className="rounded-xl border border-white/10 bg-white/5 p-3 animate-pulse">
+                          <div className="h-4 w-1/2 rounded bg-white/20 mb-2" />
+                          <div className="h-3 w-1/4 rounded bg-white/10" />
                         </div>
-                        <div className="mt-2 h-3 w-24 rounded bg-white/10" />
-                      </li>
-                    ))}
-                  </ul>
-                ) : activities.length === 0 ? (
-                  <div className="h-full flex items-center justify-center rounded-xl border border-dashed border-white/20 p-4 text-center text-sm text-indigo-100/40">
-                    Belum ada aktivitas baru. Coba selesaikan misi hari ini.
-                  </div>
-                ) : (
-                  <ul className="space-y-3">
-                    {activities.map((activity) => {
-                      const Icon = iconForActivity(activity.type);
-
-                      return (
-                        <li key={activity.title} className="rounded-xl border border-white/10 bg-white/5 p-3">
-                          <p className="flex items-center gap-2 text-sm font-semibold text-white">
-                            <Icon size={16} className="text-indigo-100/90" aria-hidden="true" />
-                            {activity.title}
-                          </p>
-                          <p className="mt-1 text-xs text-indigo-100/70">{activity.timestamp}</p>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                )}
-              </div>
-            </GlassCard>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                      {activities.map((activity) => {
+                        const Icon = iconForActivity(activity.type);
+                        return (
+                          <div key={activity.title} className="rounded-xl border border-white/10 bg-white/5 p-3">
+                            <p className="flex items-center gap-2 text-sm font-semibold text-white">
+                              <Icon size={16} className="text-indigo-100/90" />
+                              {activity.title}
+                            </p>
+                            <p className="mt-1 text-xs text-indigo-100/70">{activity.timestamp}</p>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              </GlassCard>
+            </div>
           </section>
         </main>
       </div>
