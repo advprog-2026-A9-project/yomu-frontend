@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Home from './pages/Home';
 import ReadingList from './pages/reading/ReadingList.tsx';
 import ReadingDetail from './pages/reading/ReadingDetail.tsx';
@@ -10,6 +10,11 @@ import ClanPageContainer from './pages/social/ClanPageContainer';
 import ClanFormPage from './pages/social/ClanFormPage';
 import ClanDiscoverPage from './pages/social/ClanDiscoverPage';
 import ClanLeaderboardPage from './pages/social/ClanLeaderboardPage';
+import AdminDashboardPage from './pages/admin/AdminDashboardPage';
+import AdminLeaguePage from './pages/admin/AdminLeaguePage';
+import AdminAchievementsPage from './pages/admin/AdminAchievementsPage';
+import AdminDailyMissionsPage from './pages/admin/AdminDailyMissionsPage';
+import { useAuth } from './context/AuthContext';
 
 // Placeholder for coming soon pages
 function ComingSoonPage() {
@@ -23,11 +28,49 @@ function ComingSoonPage() {
   );
 }
 
+function AdminRoute({ children }: { children: React.ReactNode }) {
+  const { loading, isAuthenticated, isAdmin } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="yomu-shell yomu-grid-noise flex min-h-screen items-center justify-center px-6">
+        <div className="yomu-glass rounded-2xl px-6 py-5 text-center">
+          <div className="mx-auto h-10 w-10 animate-spin rounded-full border-2 border-indigo-300/30 border-t-indigo-300" />
+          <p className="mt-3 text-sm text-indigo-100/80">Mengecek akses admin...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+
+  if (!isAdmin) {
+    return <Navigate to="/" replace />;
+  }
+
+  return <>{children}</>;
+}
+
 function App() {
   return (
     <Router>
       <Routes>
         <Route path="/" element={<Home />} />
+        <Route
+          path="/admin"
+          element={
+            <AdminRoute>
+              <AdminDashboardPage />
+            </AdminRoute>
+          }
+        >
+          <Route index element={<Navigate to="league" replace />} />
+          <Route path="league" element={<AdminLeaguePage />} />
+          <Route path="achievements" element={<AdminAchievementsPage />} />
+          <Route path="daily-missions" element={<AdminDailyMissionsPage />} />
+        </Route>
 
         <Route path="/readings" element={<ReadingList />} />
         <Route path="/readings/:id" element={<ReadingDetail />} />
