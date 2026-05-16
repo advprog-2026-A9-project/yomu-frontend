@@ -78,3 +78,28 @@ export async function getMyAchievements(userId: string): Promise<AchievementProg
 
     return response.json();
 }
+
+export async function getShowcase(userId: string): Promise<string[]> {
+    const response = await fetchWithTimeout(`${BASE_URL}/api/gamification/showcase?userId=${userId}`, {
+        method: 'GET',
+        headers: authHeaders(),
+    });
+
+    if (!response.ok) {
+        throw new Error('Gagal mengambil showcase');
+    }
+
+    return response.json();
+}
+
+export async function updateShowcase(userId: string, achievementIds: string[]): Promise<void> {
+    const response = await fetchWithTimeout(`${BASE_URL}/api/gamification/showcase`, {
+        method: 'PUT',
+        headers: authHeaders(),
+        body: JSON.stringify({ userId, achievementIds }),
+    });
+
+    if (!response.ok) {
+        throw new Error('Gagal menyimpan showcase');
+    }
+}

@@ -14,6 +14,7 @@ import AdminDashboardPage from './pages/admin/AdminDashboardPage';
 import AdminLeaguePage from './pages/admin/AdminLeaguePage';
 import AdminAchievementsPage from './pages/admin/AdminAchievementsPage';
 import AdminDailyMissionsPage from './pages/admin/AdminDailyMissionsPage';
+import AchievementsPage from './pages/gamification/AchievementsPage';
 import { useAuth } from './context/AuthContext';
 
 // Placeholder for coming soon pages
@@ -94,7 +95,7 @@ function App() {
 
         {/* Coming soon pages */}
         <Route path="/missions" element={<ComingSoonPage />} />
-        <Route path="/achievements" element={<ComingSoonPage />} />
+        <Route path="/achievements" element={<AchievementsPage />} />
         <Route path="/league" element={<ComingSoonPage />} />
         <Route path="/profile" element={<ComingSoonPage />} />
         <Route path="/settings" element={<ComingSoonPage />} />
