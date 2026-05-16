@@ -1,3 +1,271 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss/base";
+@import "tailwindcss/components";
+@import "tailwindcss/utilities";
+
+:root {
+	color-scheme: dark;
+	--bg: 10 13 32;
+	--bg-soft: 20 25 52;
+	--surface: 28 35 72;
+	--surface-muted: 34 44 86;
+	--border: 127 142 255;
+	--text: 239 242 255;
+	--text-muted: 181 190 232;
+	--primary: 96 112 255;
+	--primary-2: 108 77 255;
+	--accent: 255 198 74;
+	--tier-bronze: 184 115 51;
+	--tier-silver: 185 194 213;
+	--tier-gold: 255 210 87;
+	--tier-diamond: 116 224 255;
+}
+
+html,
+body,
+#root {
+	min-height: 100%;
+}
+
+body {
+	margin: 0;
+	font-family: "Plus Jakarta Sans", "Manrope", "Segoe UI", sans-serif;
+	color: rgb(var(--text));
+	background:
+		radial-gradient(circle at 15% 20%, rgba(89, 111, 255, 0.22), transparent 28%),
+		radial-gradient(circle at 90% 15%, rgba(255, 198, 74, 0.16), transparent 26%),
+		radial-gradient(circle at 50% 100%, rgba(81, 57, 255, 0.26), transparent 45%),
+		rgb(var(--bg));
+}
+
+* {
+	box-sizing: border-box;
+}
+
+@layer components {
+	.yomu-shell {
+		min-height: 100vh;
+		color: rgb(var(--text));
+	}
+
+	.yomu-container {
+		margin-left: auto;
+		margin-right: auto;
+		width: 100%;
+		max-width: 80rem; /* 1280px */
+		padding-left: 1rem;
+		padding-right: 1rem;
+	}
+
+	.yomu-glass {
+		border: 1px solid rgba(255, 255, 255, 0.1);
+		background-color: rgba(255, 255, 255, 0.05);
+		backdrop-filter: blur(20px);
+		-webkit-backdrop-filter: blur(20px);
+		box-shadow: 0 20px 50px rgba(10, 13, 32, 0.35);
+	}
+
+	.yomu-card {
+		border: 1px solid rgba(255, 255, 255, 0.1);
+		background-color: rgba(255, 255, 255, 0.05);
+		backdrop-filter: blur(20px);
+		-webkit-backdrop-filter: blur(20px);
+		border-radius: 1rem;
+		padding: 1.25rem;
+		transition-property: all;
+		transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+		transition-duration: 300ms;
+	}
+
+	.yomu-card-hover:hover {
+		transform: translateY(-4px);
+		border-color: rgba(165, 180, 252, 0.5);
+		background-color: rgba(255, 255, 255, 0.1);
+	}
+
+	.yomu-badge {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		border-radius: 9999px;
+		border: 1px solid rgba(255, 255, 255, 0.2);
+		background-color: rgba(255, 255, 255, 0.05);
+		padding: 0.25rem 0.75rem;
+		font-size: 0.75rem;
+		font-weight: 600;
+		text-transform: uppercase;
+		letter-spacing: 0.025em;
+		color: rgb(226, 232, 240);
+	}
+
+	.yomu-title {
+		font-size: 1.875rem;
+		line-height: 2.25rem;
+		font-weight: 800;
+		line-height: 1.25;
+	}
+
+	.yomu-subtitle {
+		font-size: 0.875rem;
+		color: rgba(224, 231, 255, 0.8);
+	}
+
+	.yomu-button-primary {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		border-radius: 0.75rem;
+		background: linear-gradient(to right, #6366f1, #8b5cf6);
+		padding: 0.75rem 1.25rem;
+		font-size: 0.875rem;
+		font-weight: 700;
+		color: white;
+		transition-property: all;
+		transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+		transition-duration: 300ms;
+		border: none;
+		cursor: pointer;
+	}
+
+	.yomu-button-primary:hover {
+		transform: scale(1.02);
+		box-shadow: 0 10px 15px -3px rgba(79, 70, 229, 0.3);
+	}
+
+	.yomu-button-secondary {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		border-radius: 0.75rem;
+		border: 1px solid rgba(255, 255, 255, 0.2);
+		background-color: rgba(255, 255, 255, 0.1);
+		padding: 0.75rem 1.25rem;
+		font-size: 0.875rem;
+		font-weight: 600;
+		color: #f1f5f9;
+		transition-property: all;
+		transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+		transition-duration: 300ms;
+		cursor: pointer;
+	}
+
+	.yomu-button-secondary:hover {
+		background-color: rgba(255, 255, 255, 0.2);
+	}
+
+	.yomu-progress-track {
+		position: relative;
+		height: 0.5rem;
+		overflow: hidden;
+		border-radius: 9999px;
+		background-color: rgba(255, 255, 255, 0.1);
+	}
+
+	.yomu-progress-fill {
+		height: 100%;
+		border-radius: 9999px;
+		background: linear-gradient(to right, #818cf8, #a78bfa);
+	}
+
+	.yomu-grid-noise {
+		background-image:
+			linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+			linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+		background-size: 34px 34px;
+		background-position: -1px -1px;
+	}
+}
+
+@keyframes float-up {
+	0%,
+	100% {
+		transform: translateY(0px);
+	}
+	50% {
+		transform: translateY(-8px);
+	}
+}
+
+@keyframes fade-rise {
+	from {
+		opacity: 0;
+		transform: translateY(10px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0px);
+	}
+}
+
+.animate-float-up {
+	animation: float-up 4s ease-in-out infinite;
+}
+
+.animate-fade-rise {
+	animation: fade-rise 0.5s ease-out both;
+}
+
+@layer utilities {
+	.scrollbar-hide::-webkit-scrollbar {
+		display: none;
+	}
+	.scrollbar-hide {
+		-ms-overflow-style: none;
+		scrollbar-width: none;
+	}
+
+	.scrollbar-thin::-webkit-scrollbar {
+		width: 4px;
+	}
+	.scrollbar-thin::-webkit-scrollbar-track {
+		background-color: rgba(255, 255, 255, 0.05);
+	}
+	.scrollbar-thin::-webkit-scrollbar-thumb {
+		background-color: rgba(99, 102, 241, 0.2);
+		border-radius: 9999px;
+		transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
+		transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+		transition-duration: 150ms;
+	}
+	.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+		background-color: rgba(99, 102, 241, 0.4);
+	}
+
+	.custom-scrollbar::-webkit-scrollbar {
+		width: 6px;
+	}
+	.custom-scrollbar::-webkit-scrollbar-track {
+		background-color: rgba(255, 255, 255, 0.05);
+	}
+	.custom-scrollbar::-webkit-scrollbar-thumb {
+		background-color: rgba(255, 255, 255, 0.1);
+		border-radius: 9999px;
+		transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
+		transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+		transition-duration: 150ms;
+	}
+	.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+		background-color: rgba(255, 255, 255, 0.2);
+	}
+
+	/* Animation utilities */
+	.animate-in {
+		animation-duration: 200ms;
+		animation-fill-mode: both;
+		animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+	}
+	.fade-in {
+		animation-name: fade-in;
+	}
+	.zoom-in-95 {
+		animation-name: zoom-in-95;
+	}
+
+	@keyframes fade-in {
+		from { opacity: 0; }
+		to { opacity: 1; }
+	}
+	@keyframes zoom-in-95 {
+		from { opacity: 0; transform: scale(0.95); }
+		to { opacity: 1; transform: scale(1); }
+	}
+}

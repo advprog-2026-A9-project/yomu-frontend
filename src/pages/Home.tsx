@@ -1,73 +1,46 @@
-import { Link, useNavigate } from 'react-router-dom';
+import { Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import LandingPage from './landing/LandingPage';
+import DashboardHome from './dashboard/DashboardHome';
 
 function Home() {
-    const { user, loading, isAuthenticated, logout } = useAuth();
+    const { user, loading, isAuthenticated, isAdmin, logout } = useAuth();
     const navigate = useNavigate();
 
-    // Fungsi untuk menghapus sesi
     const handleLogout = () => {
         logout();
-        navigate('/'); // Memuat ulang halaman Home
+        navigate('/');
     };
 
+    if (loading) {
+        return (
+            <div className="yomu-shell yomu-grid-noise flex items-center justify-center px-6">
+                <div className="yomu-glass rounded-2xl px-6 py-5 text-center">
+                    <div className="mx-auto h-10 w-10 animate-spin rounded-full border-2 border-indigo-300/30 border-t-indigo-300" />
+                    <p className="mt-3 text-sm text-indigo-100/80">Menyiapkan pengalaman belajar kamu...</p>
+                </div>
+            </div>
+        );
+    }
+
+    if (!isAuthenticated) {
+        return <LandingPage />;
+    }
+
+    if (isAdmin) {
+        return <Navigate to="/admin" replace />;
+    }
+
     return (
-        <div className="min-h-screen flex flex-col items-center justify-center bg-gray-900 text-white p-6 font-sans text-center relative">
-
-            {/* Navigasi Auth di Pojok Kanan Atas */}
-            <div className="absolute top-6 right-8 flex gap-4 items-center">
-                {loading ? (
-                    <span className="text-gray-400 text-sm">Checking session...</span>
-                ) : isAuthenticated ? (
-                    <>
-                        <span className="text-gray-400 text-sm">
-                            Status: <strong className="text-green-400">Online ({user?.role ?? 'PELAJAR'})</strong>
-                        </span>
-                        <button
-                            onClick={handleLogout}
-                            className="px-4 py-2 bg-red-600 hover:bg-red-700 rounded-lg font-semibold transition text-sm shadow-md"
-                        >
-                            Logout
-                        </button>
-                    </>
-                ) : (
-                    <>
-                        <Link to="/login" className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg font-semibold transition text-sm shadow-md">
-                            Login
-                        </Link>
-                        <Link to="/register" className="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg font-semibold transition text-sm shadow-md">
-                            Register
-                        </Link>
-                    </>
-                )}
-            </div>
-
-            <h1 className="text-5xl font-bold mb-4 text-blue-400">Yomu Dashboard</h1>
-            <p className="text-xl text-gray-400 mb-10 max-w-lg">
-                Selamat datang di proyek Yomu. Pilih modul yang ingin kamu akses di bawah ini.
-            </p>
-
-            <div className="grid gap-4 md:grid-cols-3 w-full max-w-4xl">
-                {/* Tombol Aktif ke Modul Kamu */}
-                <Link to="/readings" className="p-6 bg-blue-800 hover:bg-blue-700 rounded-xl border border-blue-600 transition shadow-lg flex flex-col items-center">
-                    <span className="text-2xl mb-2">📚</span>
-                    <h2 className="text-xl font-bold">Modul Bacaan & Kuis</h2>
-                    <p className="text-sm text-blue-200 mt-2">Dikerjakan oleh Ryan</p>
-                </Link>
-
-                {/* Tombol Dummy untuk Modul Lain */}
-                <div className="p-6 bg-gray-800 rounded-xl border border-gray-700 opacity-60 cursor-not-allowed flex flex-col items-center">
-                    <span className="text-2xl mb-2">🔐</span>
-                    <h2 className="text-xl font-bold">Modul Auth</h2>
-                    <p className="text-sm text-gray-400 mt-2">Coming Soon</p>
-                </div>
-
-                <div className="p-6 bg-gray-800 rounded-xl border border-gray-700 opacity-60 cursor-not-allowed flex flex-col items-center">
-                    <span className="text-2xl mb-2">🎮</span>
-                    <h2 className="text-xl font-bold">Modul Gamifikasi</h2>
-                    <p className="text-sm text-gray-400 mt-2">Coming Soon</p>
-                </div>
-            </div>
+        <div className="relative">
+            <button
+                type="button"
+                onClick={handleLogout}
+                className="fixed right-4 top-4 z-40 rounded-xl border border-red-300/30 bg-red-500/20 px-4 py-2 text-xs font-bold text-red-100 backdrop-blur hover:bg-red-500/30"
+            >
+                Logout ({user?.role ?? 'PELAJAR'})
+            </button>
+            <DashboardHome username={user?.username || 'Pelajar'} loading={false} />
         </div>
     );
 }
