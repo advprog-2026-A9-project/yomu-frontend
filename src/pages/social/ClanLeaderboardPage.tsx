@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import {
   Trophy,
   Shield,
@@ -22,46 +22,51 @@ const ClanLeaderboardPage: React.FC = () => {
   const [activeTier, setActiveTier] = useState<string>('BRONZE');
   const [searchQuery, setSearchQuery] = useState('');
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        const result = await getLeaderboard();
-        setData(result);
-        
-        if (result.length > 0) {
-          // Default to user's tier if available in AuthContext
-          if (user?.clanTier) {
-            const userTier = user.clanTier.toUpperCase();
-            if (result.some(d => d.tier.toUpperCase() === userTier)) {
-              setActiveTier(userTier);
-            } else {
-              setActiveTier(result[0].tier.toUpperCase());
-            }
+  const fetchData = useCallback(async (query?: string) => {
+    try {
+      setLoading(true);
+      const result = await getLeaderboard(query);
+      setData(result);
+
+      if (result.length > 0 && !activeTier) {
+        if (user?.clanTier) {
+          const userTier = user.clanTier.toUpperCase();
+          if (result.some(d => d.tier.toUpperCase() === userTier)) {
+            setActiveTier(userTier);
           } else {
             setActiveTier(result[0].tier.toUpperCase());
           }
+        } else {
+          setActiveTier(result[0].tier.toUpperCase());
         }
-      } catch (err) {
-        setError('Failed to load leaderboard data.');
-      } finally {
-        setLoading(false);
       }
-    };
+    } catch (err) {
+      setError('Failed to load leaderboard data.');
+    } finally {
+      setLoading(false);
+    }
+  }, [user?.clanTier, activeTier]);
+
+  useEffect(() => {
     fetchData();
-  }, [user?.clanTier]);
+  }, [fetchData]);
+
+  // Debounced search
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      fetchData(searchQuery);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery, fetchData]);
 
   const userClanId = user?.clanId;
 
   const currentTierData = data.find(d => d.tier.toUpperCase() === activeTier.toUpperCase());
   const userEntry = currentTierData?.userEntry;
-  const top50Entries = currentTierData?.entries.slice(0, 50) || [];
+  const filteredEntries = currentTierData?.entries || [];
 
-  const isUserInTop50 = userClanId && top50Entries.some(e => e.clanId === userClanId);
-
-  const filteredEntries = top50Entries.filter(entry =>
-    entry.clanName.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const isUserInTop50 = userClanId && filteredEntries.some(e => e.clanId === userClanId);
 
   const tiers = ['DIAMOND', 'GOLD', 'SILVER', 'BRONZE'];
 
@@ -155,6 +160,7 @@ const ClanLeaderboardPage: React.FC = () => {
             placeholder="Search clans in this tier..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
+            maxLength={50}
             className="w-full bg-white/5 border border-white/10 rounded-2xl pl-10 pr-4 py-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/40 transition-all animate-fade-rise"
             style={{ animationDelay: '0.1s' }}
           />

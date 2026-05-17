@@ -181,9 +181,13 @@ export async function updateClan(clanId: String, data: CreateClanPayload): Promi
 
 }
 
-export async function getAllClans(): Promise<ClanResponse[]> {
+export async function getAllClans(search?: string, random: boolean = false): Promise<ClanResponse[]> {
     const token = localStorage.getItem("token");
-    const response = await fetchWithTimeout(`${API_BASE}`, {
+    const params = new URLSearchParams();
+    if (search) params.append("search", search);
+    if (random) params.append("random", "true");
+
+    const response = await fetchWithTimeout(`${API_BASE}?${params.toString()}`, {
         method: "GET",
         headers: {
             "Content-Type": "application/json",
@@ -309,9 +313,13 @@ export interface LeaderboardByTier {
     userEntry?: LeaderboardEntry;
 }
 
-export async function getLeaderboard(): Promise<LeaderboardByTier[]> {
+export async function getLeaderboard(search?: string): Promise<LeaderboardByTier[]> {
     const token = localStorage.getItem("token");
-    const response = await fetchWithTimeout(`${API_BASE}/leaderboard`, {
+    const url = search 
+        ? `${API_BASE}/leaderboard?search=${encodeURIComponent(search)}`
+        : `${API_BASE}/leaderboard`;
+
+    const response = await fetchWithTimeout(url, {
         method: "GET",
         headers: {
             "Content-Type": "application/json",

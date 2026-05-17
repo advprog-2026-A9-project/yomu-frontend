@@ -1,14 +1,14 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { 
-  Search, 
-  Users, 
-  Trophy, 
-  ChevronRight, 
-  Shield, 
-  Loader2, 
+import {
+  Search,
+  Users,
+  Trophy,
+  ChevronRight,
+  Shield,
+  Loader2,
   AlertCircle,
-  Filter,
+  RefreshCcw,
   CheckCircle2
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
@@ -21,52 +21,66 @@ const ClanDiscoverPage: React.FC = () => {
   const navigate = useNavigate();
 
   const [clans, setClans] = useState<ClanResponse[]>([]);
-  const [filteredClans, setFilteredClans] = useState<ClanResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [joiningId, setJoiningId] = useState<string | null>(null);
   const [joinSuccess, setJoinSuccess] = useState<string | null>(null);
+  const [isRandom, setIsRandom] = useState(true);
 
-  const fetchClans = async () => {
+  const fetchClans = useCallback(async (query?: string, random: boolean = false) => {
     try {
       setLoading(true);
       setError(null);
-      const data = await getAllClans();
+      const data = await getAllClans(query, random);
       setClans(data);
-      setFilteredClans(data);
     } catch (err) {
       console.error("Error fetching clans:", err);
       setError("Failed to load clans. Please try again later.");
     } finally {
       setLoading(false);
     }
-  };
-
-  useEffect(() => {
-    fetchClans();
   }, []);
 
   useEffect(() => {
-    const filtered = clans.filter(clan => 
-      clan.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      clan.description.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-    setFilteredClans(filtered);
-  }, [searchQuery, clans]);
+    // Initial fetch: 10 random clans
+    fetchClans('', true);
+  }, [fetchClans]);
+
+  // Debounced search
+  useEffect(() => {
+    if (searchQuery.trim().length === 0) {
+      if (!isRandom) {
+        setIsRandom(true);
+        fetchClans('', true);
+      }
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      setIsRandom(false);
+      fetchClans(searchQuery, false);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery, fetchClans, isRandom]);
+
+  const handleRefresh = () => {
+    setSearchQuery('');
+    setIsRandom(true);
+    fetchClans('', true);
+  };
 
   const handleJoin = async (clanId: string, clanTier: string) => {
     try {
       setJoiningId(clanId);
       await joinClan({ id: clanId });
       setJoinSuccess(clanId);
-      
-      // Update global auth state
+
       setClanInfo(clanId, clanTier);
-      
-      // Navigate to clan page after a brief delay
+
       setTimeout(() => {
-        navigate('/social/clan');
+        navigate('/clan');
       }, 1500);
     } catch (err) {
       alert(err instanceof Error ? err.message : "Failed to join clan");
@@ -79,12 +93,7 @@ const ClanDiscoverPage: React.FC = () => {
     if (loading) {
       return (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <SkeletonCard />
-          <SkeletonCard />
-          <SkeletonCard />
-          <SkeletonCard />
-          <SkeletonCard />
-          <SkeletonCard />
+          {[...Array(6)].map((_, i) => <SkeletonCard key={i} />)}
         </div>
       );
     }
@@ -94,13 +103,28 @@ const ClanDiscoverPage: React.FC = () => {
         <div className="flex flex-col items-center justify-center py-20 space-y-4">
           <AlertCircle size={48} className="text-red-400 opacity-50" />
           <p className="text-indigo-100/60">{error}</p>
-          <button onClick={fetchClans} className="yomu-button-primary">Retry</button>
+          <button onClick={() => fetchClans(searchQuery, isRandom)} className="yomu-button-primary">Retry</button>
         </div>
       );
     }
 
-    // CASE 1: No clans exist in the system at all
     if (clans.length === 0) {
+      if (searchQuery) {
+        return (
+          <div className="flex flex-col items-center justify-center py-24 text-center space-y-4 animate-fade-rise">
+            <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center text-indigo-100/20">
+              <Search size={32} />
+            </div>
+            <div className="space-y-1">
+              <p className="text-white font-bold text-lg">No results for "{searchQuery}"</p>
+              <p className="text-indigo-100/60">Try different keywords or check for typos.</p>
+            </div>
+            <button onClick={() => setSearchQuery('')} className="text-indigo-400 text-sm font-bold hover:underline">
+              Clear Search
+            </button>
+          </div>
+        );
+      }
       return (
         <div className="flex flex-col items-center justify-center py-24 text-center space-y-6 animate-fade-rise">
           <div className="w-20 h-20 rounded-full bg-indigo-500/10 flex items-center justify-center text-indigo-400/50">
@@ -112,7 +136,7 @@ const ClanDiscoverPage: React.FC = () => {
               It looks like no one has created a clan yet. Start a new legacy today!
             </p>
           </div>
-          <button 
+          <button
             onClick={() => navigate('/clan/create')}
             className="yomu-button-primary flex items-center gap-2"
           >
@@ -122,30 +146,11 @@ const ClanDiscoverPage: React.FC = () => {
       );
     }
 
-    // CASE 2: Search yielded no results
-    if (filteredClans.length === 0) {
-      return (
-        <div className="flex flex-col items-center justify-center py-24 text-center space-y-4 animate-fade-rise">
-          <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center text-indigo-100/20">
-            <Search size={32} />
-          </div>
-          <div className="space-y-1">
-            <p className="text-white font-bold text-lg">No results for "{searchQuery}"</p>
-            <p className="text-indigo-100/60">Try different keywords or check for typos.</p>
-          </div>
-          <button onClick={() => setSearchQuery('')} className="text-indigo-400 text-sm font-bold hover:underline">
-            Clear Search
-          </button>
-        </div>
-      );
-    }
-
-    // CASE 3: Normal listing
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredClans.map((clan) => (
-          <GlassCard 
-            key={clan.id} 
+        {clans.map((clan) => (
+          <GlassCard
+            key={clan.id}
             className="group flex flex-col justify-between hover:border-indigo-500/30 transition-all animate-fade-rise"
           >
             <div className="space-y-4">
@@ -182,14 +187,13 @@ const ClanDiscoverPage: React.FC = () => {
                   Joined!
                 </div>
               ) : (
-                <button 
+                <button
                   onClick={() => handleJoin(clan.id, clan.tier)}
                   disabled={joiningId !== null || clan.memberCount >= 50}
-                  className={`w-full py-3 flex items-center justify-center gap-2 group/btn rounded-xl font-bold transition-all ${
-                    clan.memberCount >= 50 
-                      ? 'bg-white/5 text-indigo-100/30 border border-white/5 cursor-not-allowed' 
+                  className={`w-full py-3 flex items-center justify-center gap-2 group/btn rounded-xl font-bold transition-all ${clan.memberCount >= 50
+                      ? 'bg-white/5 text-indigo-100/30 border border-white/5 cursor-not-allowed'
                       : 'yomu-button-secondary'
-                  }`}
+                    }`}
                 >
                   {joiningId === clan.id ? (
                     <Loader2 size={18} className="animate-spin" />
@@ -219,22 +223,29 @@ const ClanDiscoverPage: React.FC = () => {
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
               <h1 className="text-3xl font-black text-white">Discover Clans</h1>
-              <p className="text-indigo-100/60">Find the perfect community to grow your skills</p>
+              <p className="text-indigo-100/60">
+                {isRandom ? 'Showing random clans to join' : `Search results for "${searchQuery}"`}
+              </p>
             </div>
-            
+
             <div className="flex gap-2">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-indigo-100/40" size={18} />
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   placeholder="Search clans..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
+                  maxLength={50}
                   className="bg-white/5 border border-white/10 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/40 w-full md:w-64 transition-all"
                 />
               </div>
-              <button className="bg-white/5 border border-white/10 p-2.5 rounded-xl text-indigo-100/60 hover:text-white transition-colors">
-                <Filter size={18} />
+              <button
+                onClick={handleRefresh}
+                title="Refresh random clans"
+                className="bg-white/5 border border-white/10 p-2.5 rounded-xl text-indigo-100/60 hover:text-white transition-colors hover:bg-white/10"
+              >
+                <RefreshCcw size={18} className={loading && isRandom ? 'animate-spin' : ''} />
               </button>
             </div>
           </div>
