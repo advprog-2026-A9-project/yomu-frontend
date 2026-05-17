@@ -10,10 +10,13 @@ import {
   AlertCircle,
   Plus,
   Search,
-  UserMinus
+  UserMinus,
+  Check,
+  X
 } from 'lucide-react';
 import { TierBadge } from '../../components/common/UI';
 import Sidebar from '../../components/common/Sidebar';
+import { ClanJoinRequestResponse } from '../../services/socialAPI';
 
 // Types based on Backend DTOs
 export interface ClanMember {
@@ -58,6 +61,12 @@ interface ClanPageProps {
   onDeleteClan?: () => void;
   onLeaveClan?: () => void;
   onKickMember?: (memberId: string) => void;
+  requests?: ClanJoinRequestResponse[];
+  totalRequests?: number;
+  onAcceptRequest?: (id: number) => void;
+  onRejectRequest?: (id: number) => void;
+  onRejectAllRequests?: () => void;
+  onSeedRequests?: () => void;
 }
 
 const ClanPage: React.FC<ClanPageProps> = ({
@@ -69,7 +78,13 @@ const ClanPage: React.FC<ClanPageProps> = ({
   onEditClan,
   onDeleteClan,
   onLeaveClan,
-  onKickMember
+  onKickMember,
+  requests = [],
+  totalRequests = 0,
+  onAcceptRequest,
+  onRejectRequest,
+  onRejectAllRequests,
+  onSeedRequests
 }) => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [memberToKick, setMemberToKick] = useState<ClanMember | null>(null);
@@ -259,6 +274,76 @@ const ClanPage: React.FC<ClanPageProps> = ({
             )}
           </div>
         </section>
+
+        {/* 2.5 Join Requests (Leader Only) */}
+        {isLeader && requests.length > 0 && (
+          <section className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-bold text-white">Join Requests</h2>
+              <div className="flex items-center gap-3">
+                <span className="text-xs font-medium text-amber-100/80 bg-amber-500/20 px-2 py-1 rounded-lg">
+                  {totalRequests} Pending
+                </span>
+                <button
+                  onClick={onSeedRequests}
+                  className="text-[10px] font-bold bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500/20 px-2 py-1 rounded-lg transition-colors border border-indigo-500/20"
+                  title="Dev Tool: Add 100 Requests"
+                >
+                  Seed 100
+                </button>
+                <button
+                  onClick={onRejectAllRequests}
+                  className="text-xs font-bold bg-red-500/10 text-red-400 hover:bg-red-500/20 px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1 border border-red-500/20"
+                >
+                  <X size={14} />
+                  Reject All
+                </button>
+              </div>
+            </div>
+
+            <div className="yomu-glass rounded-2xl overflow-hidden border-white/5 relative">
+              <div className="max-h-[300px] overflow-y-auto divide-y divide-white/5 scrollbar-thin">
+              {requests.map((req) => (
+                <div key={req.id} className="flex items-center justify-between p-4 hover:bg-white/[0.02] transition-colors">
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-xl bg-white/5 text-indigo-100 border border-white/10 flex items-center justify-center font-bold text-sm">
+                      {req.username.substring(0, 2).toUpperCase()}
+                    </div>
+                    <div>
+                      <span className="font-bold text-sm text-white block">{req.username}</span>
+                      <span className="text-xs text-indigo-100/50 block">Requested to join</span>
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => onAcceptRequest?.(req.id)}
+                      className="p-2 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 rounded-lg transition-colors"
+                      title="Accept"
+                    >
+                      <Check size={16} />
+                    </button>
+                    <button
+                      onClick={() => onRejectRequest?.(req.id)}
+                      className="p-2 bg-red-500/10 text-red-400 hover:bg-red-500/20 rounded-lg transition-colors"
+                      title="Reject"
+                    >
+                      <X size={16} />
+                    </button>
+                  </div>
+                </div>
+              ))}
+              </div>
+              {requests.length > 5 && (
+                <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-slate-900/40 to-transparent pointer-events-none" />
+              )}
+            </div>
+            {totalRequests > requests.length && (
+              <p className="text-xs text-indigo-100/50 text-center mt-2">
+                Showing {requests.length} of {totalRequests} requests. Reject or accept some to see more.
+              </p>
+            )}
+          </section>
+        )}
 
         {/* 3. Member List */}
         <section className="space-y-4">
