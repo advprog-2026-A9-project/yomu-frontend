@@ -66,7 +66,6 @@ interface ClanPageProps {
   onAcceptRequest?: (id: number) => void;
   onRejectRequest?: (id: number) => void;
   onRejectAllRequests?: () => void;
-  onSeedRequests?: () => void;
 }
 
 const ClanPage: React.FC<ClanPageProps> = ({
@@ -83,8 +82,7 @@ const ClanPage: React.FC<ClanPageProps> = ({
   totalRequests = 0,
   onAcceptRequest,
   onRejectRequest,
-  onRejectAllRequests,
-  onSeedRequests
+  onRejectAllRequests
 }) => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [memberToKick, setMemberToKick] = useState<ClanMember | null>(null);
@@ -284,13 +282,6 @@ const ClanPage: React.FC<ClanPageProps> = ({
                 <span className="text-xs font-medium text-amber-100/80 bg-amber-500/20 px-2 py-1 rounded-lg">
                   {totalRequests} Pending
                 </span>
-                <button
-                  onClick={onSeedRequests}
-                  className="text-[10px] font-bold bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500/20 px-2 py-1 rounded-lg transition-colors border border-indigo-500/20"
-                  title="Dev Tool: Add 100 Requests"
-                >
-                  Seed 100
-                </button>
                 <button
                   onClick={onRejectAllRequests}
                   className="text-xs font-bold bg-red-500/10 text-red-400 hover:bg-red-500/20 px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1 border border-red-500/20"

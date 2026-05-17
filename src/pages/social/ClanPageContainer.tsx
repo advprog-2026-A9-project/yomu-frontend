@@ -11,7 +11,6 @@ import {
   acceptClanRequest,
   rejectClanRequest,
   rejectAllClanRequests,
-  seedClanRequests,
   ClanJoinRequestResponse
 } from '../../services/socialAPI';
 import ClanPage, { Clan } from './ClanPage';
@@ -202,15 +201,6 @@ const ClanPageContainer: React.FC = () => {
     }
   };
 
-  const handleSeedRequests = async () => {
-    if (!clan) return;
-    try {
-      await seedClanRequests(clan.id, 100);
-      fetchClanData();
-    } catch (err) {
-      alert(err instanceof Error ? err.message : "Failed to seed requests");
-    }
-  };
 
   return (
     <ClanPage
@@ -228,7 +218,6 @@ const ClanPageContainer: React.FC = () => {
       onAcceptRequest={handleAcceptRequest}
       onRejectRequest={handleRejectRequest}
       onRejectAllRequests={handleRejectAllRequests}
-      onSeedRequests={handleSeedRequests}
     />
   );
 }
