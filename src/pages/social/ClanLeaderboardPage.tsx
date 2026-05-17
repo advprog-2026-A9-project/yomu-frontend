@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import {
   Trophy,
   Shield,
@@ -6,8 +6,7 @@ import {
   Medal,
   ChevronUp,
   ChevronDown,
-  AlertCircle,
-  Search
+  AlertCircle
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { getLeaderboard, LeaderboardByTier } from '../../services/socialAPI';
@@ -15,50 +14,46 @@ import Sidebar from '../../components/common/Sidebar';
 import { GlassCard } from '../../components/common/UI';
 
 const ClanLeaderboardPage: React.FC = () => {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [data, setData] = useState<LeaderboardByTier[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeTier, setActiveTier] = useState<string>('BRONZE');
-  const [searchQuery, setSearchQuery] = useState('');
+  const hasAutoSelectedTier = useRef(false);
 
-  const fetchData = useCallback(async (query?: string) => {
+  const fetchData = useCallback(async () => {
     try {
       setLoading(true);
-      const result = await getLeaderboard(query);
+      const result = await getLeaderboard();
       setData(result);
-
-      if (result.length > 0 && !activeTier) {
-        if (user?.clanTier) {
-          const userTier = user.clanTier.toUpperCase();
-          if (result.some(d => d.tier.toUpperCase() === userTier)) {
-            setActiveTier(userTier);
-          } else {
-            setActiveTier(result[0].tier.toUpperCase());
-          }
-        } else {
-          setActiveTier(result[0].tier.toUpperCase());
-        }
-      }
     } catch (err) {
       setError('Failed to load leaderboard data.');
     } finally {
       setLoading(false);
     }
-  }, [user?.clanTier, activeTier]);
+  }, []);
 
+  // Fetch logic on mount
   useEffect(() => {
     fetchData();
   }, [fetchData]);
 
-  // Debounced search
+  // Auto-select tier once when data and user are loaded
   useEffect(() => {
-    const timer = setTimeout(() => {
-      fetchData(searchQuery);
-    }, 500);
-
-    return () => clearTimeout(timer);
-  }, [searchQuery, fetchData]);
+    if (data.length > 0 && !hasAutoSelectedTier.current && !authLoading) {
+      if (user?.clanTier) {
+        const userTier = user.clanTier.toUpperCase();
+        if (data.some(d => d.tier.toUpperCase() === userTier)) {
+          setActiveTier(userTier);
+        } else {
+          setActiveTier(data[0]?.tier.toUpperCase() ?? 'BRONZE');
+        }
+      } else {
+        setActiveTier(data[0]?.tier.toUpperCase() ?? 'BRONZE');
+      }
+      hasAutoSelectedTier.current = true;
+    }
+  }, [data, user?.clanTier, authLoading]);
 
   const userClanId = user?.clanId;
 
@@ -151,21 +146,6 @@ const ClanLeaderboardPage: React.FC = () => {
           </div>
         </header>
 
-        <div className="relative">
-          <div className="absolute left-3 top-1/2 -translate-y-1/2 text-indigo-100/40">
-            <Search size={18} />
-          </div>
-          <input
-            type="text"
-            placeholder="Search clans in this tier..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            maxLength={50}
-            className="w-full bg-white/5 border border-white/10 rounded-2xl pl-10 pr-4 py-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/40 transition-all animate-fade-rise"
-            style={{ animationDelay: '0.1s' }}
-          />
-        </div>
-
         {loading ? (
           <div className="space-y-4">
             {[...Array(5)].map((_, i) => (
@@ -202,7 +182,7 @@ const ClanLeaderboardPage: React.FC = () => {
               ))}
 
               {/* Show user's clan separately if not in Top 50 */}
-              {userEntry && !isUserInTop50 && !searchQuery && (
+              {userEntry && !isUserInTop50 && (
                 <>
                   <div className="flex items-center justify-center py-4">
                     <div className="h-px bg-white/10 flex-1" />

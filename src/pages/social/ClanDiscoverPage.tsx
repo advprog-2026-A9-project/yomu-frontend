@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Search,
@@ -17,7 +17,7 @@ import Sidebar from '../../components/common/Sidebar';
 import { GlassCard, TierBadge, SkeletonCard } from '../../components/common/UI';
 
 const ClanDiscoverPage: React.FC = () => {
-  const { user, setClanInfo } = useAuth();
+  const { user } = useAuth();
   const navigate = useNavigate();
 
   const [clans, setClans] = useState<ClanResponse[]>([]);
@@ -27,6 +27,7 @@ const ClanDiscoverPage: React.FC = () => {
   const [joiningId, setJoiningId] = useState<string | null>(null);
   const [joinSuccess, setJoinSuccess] = useState<string | null>(null);
   const [isRandom, setIsRandom] = useState(true);
+  const previousQuery = useRef(searchQuery);
 
   const fetchClans = useCallback(async (query?: string, random: boolean = false) => {
     try {
@@ -49,39 +50,36 @@ const ClanDiscoverPage: React.FC = () => {
 
   // Debounced search
   useEffect(() => {
-    if (searchQuery.trim().length === 0) {
-      if (!isRandom) {
-        setIsRandom(true);
-        fetchClans('', true);
-      }
+    if (searchQuery === previousQuery.current) {
       return;
     }
 
     const timer = setTimeout(() => {
-      setIsRandom(false);
-      fetchClans(searchQuery, false);
+      previousQuery.current = searchQuery;
+      if (searchQuery.trim().length === 0) {
+        setIsRandom(true);
+        fetchClans('', true);
+      } else {
+        setIsRandom(false);
+        fetchClans(searchQuery, false);
+      }
     }, 500);
 
     return () => clearTimeout(timer);
-  }, [searchQuery, fetchClans, isRandom]);
+  }, [searchQuery, fetchClans]);
 
   const handleRefresh = () => {
     setSearchQuery('');
+    previousQuery.current = '';
     setIsRandom(true);
     fetchClans('', true);
   };
 
-  const handleJoin = async (clanId: string, clanTier: string) => {
+  const handleJoin = async (clanId: string) => {
     try {
       setJoiningId(clanId);
       await joinClan({ id: clanId });
       setJoinSuccess(clanId);
-
-      setClanInfo(clanId, clanTier);
-
-      setTimeout(() => {
-        navigate('/clan');
-      }, 1500);
     } catch (err) {
       alert(err instanceof Error ? err.message : "Failed to join clan");
     } finally {
@@ -184,15 +182,15 @@ const ClanDiscoverPage: React.FC = () => {
               {joinSuccess === clan.id ? (
                 <div className="w-full py-3 flex items-center justify-center gap-2 text-emerald-400 font-bold bg-emerald-500/10 rounded-xl border border-emerald-500/20">
                   <CheckCircle2 size={18} />
-                  Joined!
+                  Request Sent
                 </div>
               ) : (
                 <button
-                  onClick={() => handleJoin(clan.id, clan.tier)}
+                  onClick={() => handleJoin(clan.id)}
                   disabled={joiningId !== null || clan.memberCount >= 50}
                   className={`w-full py-3 flex items-center justify-center gap-2 group/btn rounded-xl font-bold transition-all ${clan.memberCount >= 50
-                      ? 'bg-white/5 text-indigo-100/30 border border-white/5 cursor-not-allowed'
-                      : 'yomu-button-secondary'
+                    ? 'bg-white/5 text-indigo-100/30 border border-white/5 cursor-not-allowed'
+                    : 'yomu-button-secondary'
                     }`}
                 >
                   {joiningId === clan.id ? (
