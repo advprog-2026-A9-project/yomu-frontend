@@ -7,7 +7,6 @@ import {
   MessageSquare,
   Settings,
   Shield,
-  Target,
   Trophy,
   type LucideIcon,
 } from 'lucide-react';
