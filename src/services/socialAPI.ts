@@ -397,23 +397,7 @@ export async function rejectAllClanRequests(clanId: string): Promise<string> {
     return response.text();
 }
 
-export async function seedClanRequests(clanId: string, count: number): Promise<string> {
-    const token = localStorage.getItem("token");
-    const response = await fetchWithTimeout(`${API_BASE}/${clanId}/requests/seed/${count}`, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            ...(token && { Authorization: `Bearer ${token}` }),
-        },
-    });
 
-    if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(extractErrorMessage(errorText, 'Gagal menambahkan seed request'));
-    }
-
-    return response.text();
-}
 
 // Leaderboard types
 export interface LeaderboardEntry {
