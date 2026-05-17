@@ -10,6 +10,18 @@ async function parseJsonResponse<T>(response: Response, fallback: T): Promise<T>
     return JSON.parse(text) as T;
 }
 
+function extractErrorMessage(text: string, fallback: string): string {
+    if (!text || !text.trim()) {
+        return fallback;
+    }
+    try {
+        const parsed = JSON.parse(text);
+        return parsed.message || parsed.error || text;
+    } catch {
+        return text;
+    }
+}
+
 async function fetchWithTimeout(
     url: string,
     options: RequestInit = {},
@@ -115,6 +127,23 @@ export interface ClanDetailResponse {
     debuffs: ClanModifier[];
 }
 
+export interface ClanJoinRequestResponse {
+    id: number;
+    clanId: string;
+    userId: string;
+    username: string;
+    status: string;
+    createdAt: string;
+}
+
+export interface PageResponse<T> {
+    content: T[];
+    totalElements: number;
+    totalPages: number;
+    size: number;
+    number: number;
+}
+
 export interface SeasonStatusResponse {
     seasonNumber: number;
     status: string;
@@ -155,7 +184,7 @@ export async function createClan(data: CreateClanPayload): Promise<any> {
 
     if (!response.ok) {
         const errorText = await response.text();
-        throw new Error(errorText || 'Gagal membuat clan');
+        throw new Error(extractErrorMessage(errorText, 'Gagal membuat clan'));
     }
 
     return parseJsonResponse(response, null);
@@ -174,7 +203,7 @@ export async function updateClan(clanId: String, data: CreateClanPayload): Promi
 
     if (!response.ok) {
         const errorText = await response.text();
-        throw new Error(errorText || 'Gagal mengedit clan');
+        throw new Error(extractErrorMessage(errorText, 'Gagal mengedit clan'));
     }
 
     return parseJsonResponse(response, null);
@@ -197,7 +226,7 @@ export async function getAllClans(search?: string, random: boolean = false): Pro
 
     if (!response.ok) {
         const errorText = await response.text();
-        throw new Error(errorText || 'Gagal mengambil daftar clan');
+        throw new Error(extractErrorMessage(errorText, 'Gagal mengambil daftar clan'));
     }
 
     return parseJsonResponse(response, []);
@@ -220,7 +249,7 @@ export async function getMyClan(): Promise<MyClanResponse | null> {
 
     if (!response.ok) {
         const errorText = await response.text();
-        throw new Error(errorText || 'Gagal mengambil clan user');
+        throw new Error(extractErrorMessage(errorText, 'Gagal mengambil clan user'));
     }
 
     return parseJsonResponse<MyClanResponse | null>(response, null);
@@ -255,7 +284,7 @@ export async function deleteClan(data: deleteClanPayload): Promise<any> {
 
     if (!response.ok) {
         const errorText = await response.text();
-        throw new Error(errorText);
+        throw new Error(extractErrorMessage(errorText, 'Gagal menghapus clan'));
     }
 
     return response.text();
@@ -273,7 +302,7 @@ export async function leaveClan(data: LeaveClanPayload): Promise<any> {
 
     if (!response.ok) {
         const errorText = await response.text();
-        throw new Error(errorText || 'Gagal keluar dari clan');
+        throw new Error(extractErrorMessage(errorText, 'Gagal keluar dari clan'));
     }
 
     return response.text();
@@ -291,7 +320,96 @@ export async function joinClan(data: JoinClanPayload): Promise<any> {
 
     if (!response.ok) {
         const errorText = await response.text();
-        throw new Error(errorText || 'Gagal bergabung dengan clan');
+        throw new Error(extractErrorMessage(errorText, 'Gagal bergabung dengan clan'));
+    }
+
+    return response.text();
+}
+
+export async function getClanRequests(clanId: string, page: number = 0, size: number = 10): Promise<PageResponse<ClanJoinRequestResponse>> {
+    const token = localStorage.getItem("token");
+    const response = await fetchWithTimeout(`${API_BASE}/${clanId}/requests?page=${page}&size=${size}`, {
+        method: "GET",
+        headers: {
+            "Content-Type": "application/json",
+            ...(token && { Authorization: `Bearer ${token}` }),
+        },
+    });
+
+    if (!response.ok) {
+        throw new Error('Gagal mengambil daftar request');
+    }
+
+    return parseJsonResponse(response, { content: [], totalElements: 0, totalPages: 0, size: 10, number: 0 });
+}
+
+export async function acceptClanRequest(clanId: string, requestId: number): Promise<string> {
+    const token = localStorage.getItem("token");
+    const response = await fetchWithTimeout(`${API_BASE}/${clanId}/requests/${requestId}/accept`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            ...(token && { Authorization: `Bearer ${token}` }),
+        },
+    });
+
+    if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(extractErrorMessage(errorText, 'Gagal menerima request'));
+    }
+
+    return response.text();
+}
+
+export async function rejectClanRequest(clanId: string, requestId: number): Promise<string> {
+    const token = localStorage.getItem("token");
+    const response = await fetchWithTimeout(`${API_BASE}/${clanId}/requests/${requestId}/reject`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            ...(token && { Authorization: `Bearer ${token}` }),
+        },
+    });
+
+    if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(extractErrorMessage(errorText, 'Gagal menolak request'));
+    }
+
+    return response.text();
+}
+
+export async function rejectAllClanRequests(clanId: string): Promise<string> {
+    const token = localStorage.getItem("token");
+    const response = await fetchWithTimeout(`${API_BASE}/${clanId}/requests/reject-all`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            ...(token && { Authorization: `Bearer ${token}` }),
+        },
+    });
+
+    if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(extractErrorMessage(errorText, 'Gagal menolak semua request'));
+    }
+
+    return response.text();
+}
+
+export async function seedClanRequests(clanId: string, count: number): Promise<string> {
+    const token = localStorage.getItem("token");
+    const response = await fetchWithTimeout(`${API_BASE}/${clanId}/requests/seed/${count}`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            ...(token && { Authorization: `Bearer ${token}` }),
+        },
+    });
+
+    if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(extractErrorMessage(errorText, 'Gagal menambahkan seed request'));
     }
 
     return response.text();
@@ -387,7 +505,7 @@ export async function kickMember(clanId: string, memberId: string): Promise<stri
 
     if (!response.ok) {
         const errorText = await response.text();
-        throw new Error(errorText || 'Gagal mengeluarkan anggota');
+        throw new Error(extractErrorMessage(errorText, 'Gagal mengeluarkan anggota'));
     }
 
     return response.text();
