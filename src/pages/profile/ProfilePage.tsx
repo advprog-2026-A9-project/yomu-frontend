@@ -299,29 +299,30 @@ const ProfilePage: React.FC = () => {
               </h2>
 
               {profile.clanName ? (
-                <div className="yomu-glass rounded-2xl p-6 sm:p-8 border-white/5 hover:border-indigo-500/20 transition-all duration-300 space-y-5 animate-fade-rise relative overflow-hidden group">
+                <div className="yomu-glass rounded-2xl p-6 border-white/5 hover:border-indigo-500/20 transition-all duration-300 flex flex-col justify-between h-[146px] animate-fade-rise relative overflow-hidden group">
                   <div className="absolute inset-0 bg-indigo-500/[0.01] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
                   <div className="flex items-center justify-between relative z-10">
-                    <div className="w-12 h-12 bg-indigo-500/10 rounded-xl flex items-center justify-center text-indigo-400 border border-indigo-500/20">
-                      <Shield size={24} />
+                    <div className="w-10 h-10 bg-indigo-500/10 rounded-xl flex items-center justify-center text-indigo-400 border border-indigo-500/20">
+                      <Shield size={20} />
                     </div>
                     <TierBadge tier={profile.clanTier!} />
                   </div>
 
-                  <div className="space-y-1 relative z-10">
-                    <h3 className="font-extrabold text-white text-lg tracking-tight group-hover:text-indigo-300 transition-colors">
+                  <div className="space-y-0.5 relative z-10">
+                    <h3 className="font-extrabold text-white text-lg tracking-tight group-hover:text-indigo-300 transition-colors truncate">
                       {profile.clanName}
                     </h3>
+                    <p className="text-xs font-semibold text-indigo-200/50">Nama Clan</p>
                   </div>
                 </div>
               ) : (
-                <div className="yomu-glass rounded-2xl p-6 sm:p-8 border-white/5 text-center py-10 space-y-4 animate-fade-rise">
-                  <Shield size={36} className="text-indigo-100/20 mx-auto" />
-                  <div className="space-y-1">
+                <div className="yomu-glass rounded-2xl p-6 border-white/5 text-center h-[146px] flex flex-col justify-center items-center space-y-2 animate-fade-rise">
+                  <Shield size={28} className="text-indigo-100/20" />
+                  <div className="space-y-0.5">
                     <h3 className="font-bold text-white text-sm">Belum Ada Clan</h3>
-                    <p className="text-xs text-indigo-100/50 max-w-xs mx-auto">
-                      User ini belum bergabung ke clan manapun untuk saat ini.
+                    <p className="text-[10px] text-indigo-100/50 max-w-[180px] mx-auto leading-normal">
+                      User ini belum bergabung ke clan manapun saat ini.
                     </p>
                   </div>
                 </div>
