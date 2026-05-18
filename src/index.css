@@ -371,7 +371,6 @@ body {
   border-radius: 1rem;
   padding: 1.5px;
   background: linear-gradient(135deg, #a855f7, #ec4899, #6366f1);
-  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
   opacity: 0.55;

@@ -52,19 +52,21 @@ export function TierBadge({
 }: {
   tier: string;
 }) {
-  const normalizedTier = tier.charAt(0).toUpperCase() + tier.slice(1).toLowerCase();
+  const normalizedTier = tier.toUpperCase();
   
   const tierStyles: Record<string, string> = {
-    Bronze: 'border-orange-700/60 bg-orange-500/20 text-orange-200',
-    Silver: 'border-slate-400/60 bg-slate-300/20 text-slate-100',
-    Gold: 'border-amber-400/70 bg-amber-400/20 text-amber-100',
-    Platinum: 'border-cyan-400/70 bg-cyan-400/20 text-cyan-100',
-    Diamond: 'border-indigo-400/70 bg-indigo-400/20 text-indigo-100',
+    BRONZE: 'border-amber-700/60 bg-amber-950/20 text-amber-500',
+    SILVER: 'border-slate-500/40 bg-slate-950/20 text-slate-300',
+    GOLD: 'border-amber-500/40 bg-amber-950/20 text-amber-400',
+    DIAMOND: 'border-cyan-500/40 bg-cyan-950/20 text-cyan-400',
+    MYTHIC: 'border-purple-500/50 bg-purple-950/30 text-purple-400 font-bold',
+    GODLIKE: 'border-red-500/60 bg-red-950/40 text-red-400 font-extrabold shadow-[0_0_10px_rgba(244,63,94,0.4)] animate-pulse',
   };
 
-  const style = tierStyles[normalizedTier] || 'border-white/20 bg-white/5 text-white';
+  const style = tierStyles[normalizedTier] || tierStyles.BRONZE;
+  const displayName = tier.charAt(0).toUpperCase() + tier.slice(1).toLowerCase();
 
-  return <span className={`yomu-badge ${style}`}>{normalizedTier}</span>;
+  return <span className={`yomu-badge ${style}`}>{displayName}</span>;
 }
 
 export function SkeletonCard({ className = '' }: { className?: string }) {

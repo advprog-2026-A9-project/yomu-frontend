@@ -19,6 +19,7 @@ const defaultForm: AchievementAdminPayload = {
   milestone: '',
   milestoneType: achievementTypes[0].value,
   milestoneThreshold: 1,
+  tier: '',
 };
 
 const ITEMS_PER_PAGE = 8;
@@ -99,6 +100,7 @@ export default function AdminAchievementsPage() {
       milestone: row.milestone,
       milestoneType: row.milestoneType,
       milestoneThreshold: row.milestoneThreshold,
+      tier: row.tier ?? '',
     });
     setIsModalOpen(true);
   };
@@ -257,9 +259,23 @@ export default function AdminAchievementsPage() {
                       <p className="mt-1 text-xs text-indigo-100/50 line-clamp-1">{achievement.milestone}</p>
                     </td>
                     <td className="px-6 py-5">
-                      <span className="rounded-full bg-indigo-500/10 px-2.5 py-1 text-[11px] font-medium text-indigo-200 border border-indigo-500/20">
-                        {achievement.milestoneType}
-                      </span>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="rounded-full bg-indigo-500/10 px-2.5 py-1 text-[11px] font-medium text-indigo-200 border border-indigo-500/20">
+                          {achievementTypes.find((t) => t.value === achievement.milestoneType)?.label || achievement.milestoneType}
+                        </span>
+                        {achievement.tier && (
+                          <span className={`rounded-full px-2.5 py-1 text-[11px] font-black border ${
+                            achievement.tier.toUpperCase() === 'BRONZE' ? 'bg-amber-700/10 text-amber-500 border-amber-700/20' :
+                            achievement.tier.toUpperCase() === 'SILVER' ? 'bg-slate-400/10 text-slate-300 border-slate-400/20' :
+                            achievement.tier.toUpperCase() === 'GOLD' ? 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20' :
+                            achievement.tier.toUpperCase() === 'DIAMOND' ? 'bg-cyan-400/10 text-cyan-300 border-cyan-400/20' :
+                            achievement.tier.toUpperCase() === 'MYTHIC' ? 'bg-purple-500/10 text-purple-400 border-purple-500/20' :
+                            'bg-red-500/10 text-red-400 border-red-500/20'
+                          }`}>
+                            {achievement.tier.toUpperCase()}
+                          </span>
+                        )}
+                      </div>
                     </td>
                     <td className="px-6 py-5 text-center font-mono text-white">{achievement.milestoneThreshold}</td>
                     <td className="px-6 py-5 text-center">
@@ -346,19 +362,38 @@ export default function AdminAchievementsPage() {
             />
           </div>
 
-          <div className="space-y-2">
-            <label className="text-sm font-semibold text-indigo-100/70">Milestone Type</label>
-            <select
-              value={form.milestoneType}
-              onChange={(e) => setForm((prev) => ({ ...prev, milestoneType: e.target.value }))}
-              className="w-full rounded-2xl border border-white/15 bg-white/5 px-4 py-3 text-white focus:border-indigo-400/50 focus:outline-none transition"
-            >
-              {achievementTypes.map((item) => (
-                <option key={item.value} value={item.value} className="bg-[#0b1020]">
-                  {item.label}
-                </option>
-              ))}
-            </select>
+          <div className="grid gap-6 md:grid-cols-2">
+            <div className="space-y-2">
+              <label className="text-sm font-semibold text-indigo-100/70">Milestone Type</label>
+              <select
+                value={form.milestoneType}
+                onChange={(e) => setForm((prev) => ({ ...prev, milestoneType: e.target.value }))}
+                className="w-full rounded-2xl border border-white/15 bg-white/5 px-4 py-3 text-white focus:border-indigo-400/50 focus:outline-none transition"
+              >
+                {achievementTypes.map((item) => (
+                  <option key={item.value} value={item.value} className="bg-[#0b1020]">
+                    {item.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-semibold text-indigo-100/70">Tier (Optional)</label>
+              <select
+                value={form.tier ?? ''}
+                onChange={(e) => setForm((prev) => ({ ...prev, tier: e.target.value || '' }))}
+                className="w-full rounded-2xl border border-white/15 bg-white/5 px-4 py-3 text-white focus:border-indigo-400/50 focus:outline-none transition"
+              >
+                <option value="" className="bg-[#0b1020]">None (No Tier)</option>
+                <option value="BRONZE" className="bg-[#0b1020]">Bronze</option>
+                <option value="SILVER" className="bg-[#0b1020]">Silver</option>
+                <option value="GOLD" className="bg-[#0b1020]">Gold</option>
+                <option value="DIAMOND" className="bg-[#0b1020]">Diamond</option>
+                <option value="MYTHIC" className="bg-[#0b1020]">Mythic</option>
+                <option value="GODLIKE" className="bg-[#0b1020]">Godlike</option>
+              </select>
+            </div>
           </div>
 
           {error && (

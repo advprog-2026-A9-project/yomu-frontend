@@ -6,7 +6,7 @@ export default function AchievementBadge({
   description,
 }: {
   title: string;
-  rarity: 'Bronze' | 'Silver' | 'Gold' | 'Diamond';
+  rarity: string;
   description: string;
 }) {
   return (
