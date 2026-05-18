@@ -1,30 +1,36 @@
 import { useState, useEffect } from 'react';
-import { createText, getAllCategories } from '../../services/readingTextAPI';
-import type { CategoryResponse } from '../../services/readingTextAPI';
+import { createText, updateText, getAllCategories } from '../../services/readingAPI';
+import type { CategoryResponse, ReadingTextResponse } from '../../types/reading';
 
-interface CreateReadingFormProps {
+interface ReadingFormProps {
+    initialData?: ReadingTextResponse | null; // Jika ada isinya, form berubah menjadi mode Edit
     onSuccess: () => void;
     onCancel: () => void;
 }
 
-export default function CreateReadingForm({ onSuccess, onCancel }: CreateReadingFormProps) {
-    const [newTitle, setNewTitle] = useState('');
-    const [newContent, setNewContent] = useState('');
-    const [newCategoryId, setNewCategoryId] = useState<number | ''>(''); // Kosong saat awal
+export default function CreateReadingForm({ initialData, onSuccess, onCancel }: ReadingFormProps) {
+    const [title, setTitle] = useState(initialData?.title || '');
+    const [content, setContent] = useState(initialData?.content || '');
+    const [categoryId, setCategoryId] = useState<number | ''>('');
 
-    // State baru untuk menampung daftar kategori dari backend
     const [categories, setCategories] = useState<CategoryResponse[]>([]);
     const [status, setStatus] = useState<string>('');
 
-    // Fetch daftar kategori saat form pertama kali dimunculkan
+    // Fetch daftar kategori
     useEffect(() => {
         const fetchCategories = async () => {
             try {
                 const data = await getAllCategories();
                 setCategories(data);
-                // Secara otomatis pilih kategori pertama sebagai default jika data ada
-                if (data.length > 0) {
-                    setNewCategoryId(data[0].id);
+
+                // Jika mode EDIT, cari ID kategori yang cocok dengan categoryName dari initialData
+                if (initialData) {
+                    const existingCat = data.find(c => c.name === initialData.categoryName);
+                    if (existingCat) setCategoryId(existingCat.id);
+                }
+                // Jika mode CREATE, otomatis pilih kategori pertama
+                else if (data.length > 0) {
+                    setCategoryId(data[0].id);
                 }
             } catch (err) {
                 console.error("Gagal mengambil daftar kategori:", err);
@@ -32,56 +38,68 @@ export default function CreateReadingForm({ onSuccess, onCancel }: CreateReading
         };
 
         fetchCategories();
-    }, []);
+    }, [initialData]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        if (newCategoryId === '') {
-            alert('Tunggu sebentar, kategori sedang dimuat...');
+        if (categoryId === '') {
+            alert('Tunggu sebentar, kategori sedang dimuat atau belum dipilih...');
             return;
         }
 
         try {
             setStatus('Saving...');
-            await createText({
-                title: newTitle,
-                content: newContent,
-                categoryId: Number(newCategoryId),
-            });
+            if (initialData) {
+                // Mode Edit: Tembak API PUT
+                await updateText(initialData.id, {
+                    title,
+                    content,
+                    categoryId: Number(categoryId),
+                });
+            } else {
+                // Mode Create: Tembak API POST
+                await createText({
+                    title,
+                    content,
+                    categoryId: Number(categoryId),
+                });
+            }
             setStatus('');
             onSuccess(); // Panggil fungsi refresh data di komponen induk
         } catch (err: unknown) {
-            alert('Gagal membuat teks: ' + (err instanceof Error ? err.message : 'Unknown error'));
+            alert('Gagal menyimpan teks: ' + (err instanceof Error ? err.message : 'Unknown error'));
             setStatus('Error');
         }
     };
 
+    const isEditMode = !!initialData;
+
     return (
-        <form onSubmit={handleSubmit} className="bg-gray-800 p-6 rounded-xl border border-gray-700 max-w-2xl mx-auto mb-8 shadow-xl">
-            <h2 className="text-2xl font-bold mb-4 text-blue-300">Buat Teks Bacaan Baru</h2>
+        <form onSubmit={handleSubmit} className="bg-slate-800/80 backdrop-blur-md p-6 rounded-2xl border border-indigo-500/30 max-w-2xl mx-auto shadow-2xl">
+            <h2 className="text-2xl font-bold mb-6 text-white flex items-center gap-2">
+                <span className="bg-indigo-500 w-2 h-8 rounded-full"></span>
+                {isEditMode ? 'Edit Teks Bacaan' : 'Buat Teks Bacaan Baru'}
+            </h2>
 
             <div className="mb-4">
-                <label className="block text-sm font-bold mb-2 text-gray-300">Judul Teks</label>
+                <label className="block text-sm font-bold mb-2 text-indigo-100/80">Judul Teks</label>
                 <input
                     type="text"
-                    value={newTitle}
-                    onChange={e => setNewTitle(e.target.value)}
-                    className="w-full p-2 rounded bg-gray-700 text-white border border-gray-600 focus:border-blue-500 outline-none"
+                    value={title}
+                    onChange={e => setTitle(e.target.value)}
+                    className="w-full p-3 rounded-lg bg-slate-900/50 text-white border border-white/10 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-all"
                     placeholder="Masukkan judul bacaan..."
                     required
                 />
             </div>
 
             <div className="mb-4">
-                <label className="block text-sm font-bold mb-2 text-gray-300">Kategori</label>
-                {/* Ubah Input Text menjadi Select Dropdown.
-                    Sekarang Admin tinggal memilih nama, sedangkan sistem akan otomatis mengirim ID-nya!
-                */}
+                <label className="block text-sm font-bold mb-2 text-indigo-100/80">Kategori</label>
                 <select
-                    value={newCategoryId}
-                    onChange={e => setNewCategoryId(Number(e.target.value))}
-                    className="w-full p-2 rounded bg-gray-700 text-white border border-gray-600 focus:border-blue-500 outline-none"
+                    value={categoryId}
+                    onChange={e => setCategoryId(Number(e.target.value))}
+                    className="w-full p-3 rounded-lg bg-slate-900/50 text-white border border-white/10 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-all"
                     required
                 >
                     {categories.length === 0 ? (
@@ -96,12 +114,12 @@ export default function CreateReadingForm({ onSuccess, onCancel }: CreateReading
                 </select>
             </div>
 
-            <div className="mb-4">
-                <label className="block text-sm font-bold mb-2 text-gray-300">Isi Bacaan</label>
+            <div className="mb-6">
+                <label className="block text-sm font-bold mb-2 text-indigo-100/80">Isi Bacaan</label>
                 <textarea
-                    value={newContent}
-                    onChange={e => setNewContent(e.target.value)}
-                    className="w-full p-2 rounded bg-gray-700 text-white border border-gray-600 focus:border-blue-500 outline-none h-40 resize-y"
+                    value={content}
+                    onChange={e => setContent(e.target.value)}
+                    className="w-full p-3 rounded-lg bg-slate-900/50 text-white border border-white/10 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none h-48 resize-y transition-all"
                     placeholder="Tulis atau paste isi teks bacaan di sini..."
                     required
                 />
@@ -111,17 +129,17 @@ export default function CreateReadingForm({ onSuccess, onCancel }: CreateReading
                 <button
                     type="button"
                     onClick={onCancel}
-                    className="px-4 py-2 bg-gray-600 hover:bg-gray-500 text-white rounded font-bold transition"
+                    className="px-5 py-2.5 bg-slate-700 hover:bg-slate-600 text-white rounded-lg font-bold transition-colors"
                     disabled={status === 'Saving...'}
                 >
                     Batal
                 </button>
                 <button
                     type="submit"
-                    className="px-4 py-2 bg-green-600 hover:bg-green-500 text-white rounded font-bold transition flex items-center"
+                    className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg font-bold transition-colors flex items-center"
                     disabled={status === 'Saving...'}
                 >
-                    {status === 'Saving...' ? 'Menyimpan...' : 'Simpan Teks'}
+                    {status === 'Saving...' ? 'Menyimpan...' : (isEditMode ? 'Update Teks' : 'Simpan Teks')}
                 </button>
             </div>
         </form>
