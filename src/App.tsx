@@ -14,6 +14,7 @@ import AdminDashboardPage from './pages/admin/AdminDashboardPage';
 import AdminLeaguePage from './pages/admin/AdminLeaguePage';
 import AdminAchievementsPage from './pages/admin/AdminAchievementsPage';
 import AdminDailyMissionsPage from './pages/admin/AdminDailyMissionsPage';
+import AchievementsPage from './pages/gamification/AchievementsPage';
 import { useAuth } from './context/AuthContext';
 
 // Placeholder for coming soon pages
@@ -53,6 +54,27 @@ function AdminRoute({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
+function ProtectedRoute({ children }: { children: React.ReactNode }) {
+  const { loading, isAuthenticated } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="yomu-shell yomu-grid-noise flex min-h-screen items-center justify-center px-6">
+        <div className="yomu-glass rounded-2xl px-6 py-5 text-center">
+          <div className="mx-auto h-10 w-10 animate-spin rounded-full border-2 border-indigo-300/30 border-t-indigo-300" />
+          <p className="mt-3 text-sm text-indigo-100/80">Memuat...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+
+  return <>{children}</>;
+}
+
 function App() {
   return (
     <Router>
@@ -80,11 +102,11 @@ function App() {
         <Route path="/login" element={<LoginPage />} />
 
         {/* Clan routes */}
-        <Route path="/clan" element={<ClanPageContainer />} />
-        <Route path="/clan/create" element={<ClanFormPage />} />
-        <Route path="/clan/:id/edit" element={<ClanFormPage />} />
-        <Route path="/discover-clans" element={<ClanDiscoverPage />} />
-        <Route path="/leaderboard" element={<ClanLeaderboardPage />} />
+        <Route path="/clan" element={<ProtectedRoute><ClanPageContainer /></ProtectedRoute>} />
+        <Route path="/clan/create" element={<ProtectedRoute><ClanFormPage /></ProtectedRoute>} />
+        <Route path="/clan/:id/edit" element={<ProtectedRoute><ClanFormPage /></ProtectedRoute>} />
+        <Route path="/discover-clans" element={<ProtectedRoute><ClanDiscoverPage /></ProtectedRoute>} />
+        <Route path="/leaderboard" element={<ProtectedRoute><ClanLeaderboardPage /></ProtectedRoute>} />
 
 
         {/* Leaderboard */}
@@ -93,9 +115,7 @@ function App() {
         <Route path="/discussion-test" element={<TestDiscussionPage />} />
 
         {/* Coming soon pages */}
-        <Route path="/missions" element={<ComingSoonPage />} />
-        <Route path="/achievements" element={<ComingSoonPage />} />
-        <Route path="/league" element={<ComingSoonPage />} />
+        <Route path="/achievements" element={<ProtectedRoute><AchievementsPage /></ProtectedRoute>} />
         <Route path="/profile" element={<ComingSoonPage />} />
         <Route path="/settings" element={<ComingSoonPage />} />
       </Routes>

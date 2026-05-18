@@ -112,6 +112,7 @@ const ClanFormPage: React.FC = () => {
                     type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
+                    maxLength={100}
                     placeholder="Enter a legendary name..."
                     className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/20 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 transition-all"
                     disabled={submitting}
@@ -127,6 +128,7 @@ const ClanFormPage: React.FC = () => {
                     rows={4}
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
+                    maxLength={1000}
                     placeholder="What is your clan about?"
                     className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/20 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 transition-all resize-none"
                     disabled={submitting}

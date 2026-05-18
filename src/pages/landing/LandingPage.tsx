@@ -5,7 +5,6 @@ import {
   ChartColumnBig,
   MessageSquareText,
   Shield,
-  Sparkles,
   Target,
   type LucideIcon,
 } from 'lucide-react';

@@ -7,6 +7,11 @@ import {
   leaveClan,
   deleteClan,
   kickMember,
+  getClanRequests,
+  acceptClanRequest,
+  rejectClanRequest,
+  rejectAllClanRequests,
+  ClanJoinRequestResponse
 } from '../../services/socialAPI';
 import ClanPage, { Clan } from './ClanPage';
 import { SkeletonCard } from '../../components/common/UI';
@@ -19,6 +24,8 @@ const ClanPageContainer: React.FC = () => {
   const [clan, setClan] = useState<Clan | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [requests, setRequests] = useState<ClanJoinRequestResponse[]>([]);
+  const [totalRequests, setTotalRequests] = useState<number>(0);
 
   const fetchClanData = async () => {
     if (!user) return;
@@ -54,8 +61,16 @@ const ClanPageContainer: React.FC = () => {
         };
 
         setClan(mappedClan);
+
+        if (detail.leaderUserId === user.userId) {
+          const fetchedRequests = await getClanRequests(detail.id, 0, 50); // Fetch first 50 requests
+          setRequests(fetchedRequests.content);
+          setTotalRequests(fetchedRequests.totalElements);
+        }
       } else {
         setClan(null);
+        setRequests([]);
+        setTotalRequests(0);
       }
     } catch (err) {
       console.error("Error fetching clan data:", err);
@@ -156,6 +171,37 @@ const ClanPageContainer: React.FC = () => {
     }
   };
 
+  const handleAcceptRequest = async (requestId: number) => {
+    if (!clan) return;
+    try {
+      await acceptClanRequest(clan.id, requestId);
+      fetchClanData();
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Failed to accept request");
+    }
+  };
+
+  const handleRejectRequest = async (requestId: number) => {
+    if (!clan) return;
+    try {
+      await rejectClanRequest(clan.id, requestId);
+      fetchClanData();
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Failed to reject request");
+    }
+  };
+
+  const handleRejectAllRequests = async () => {
+    if (!clan) return;
+    try {
+      await rejectAllClanRequests(clan.id);
+      fetchClanData();
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Failed to reject all requests");
+    }
+  };
+
+
   return (
     <ClanPage
       clan={clan}
@@ -167,6 +213,11 @@ const ClanPageContainer: React.FC = () => {
       onDeleteClan={handleDeleteClan}
       onLeaveClan={handleLeaveClan}
       onKickMember={handleKickMember}
+      requests={requests}
+      totalRequests={totalRequests}
+      onAcceptRequest={handleAcceptRequest}
+      onRejectRequest={handleRejectRequest}
+      onRejectAllRequests={handleRejectAllRequests}
     />
   );
 }

@@ -309,16 +309,6 @@ export default function AdminLeaguePage() {
           />
         </div>
 
-        <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-xs text-indigo-100/60">
-          <p>
-            Jumlah clan: <span className="font-bold text-white">{formatNumber(filteredSortedClans.length)}</span>
-          </p>
-          <p>
-            Menampilkan <span className="font-bold text-white">{paginatedClans.length}</span> dari{' '}
-            <span className="font-bold text-white">{formatNumber(filteredSortedClans.length)}</span>
-          </p>
-        </div>
-
         {clansLoading ? (
           <div className="mt-6 space-y-3">
             {[...Array(5)].map((_, index) => (
