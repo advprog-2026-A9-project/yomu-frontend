@@ -43,6 +43,6 @@ export interface QuizSubmissionRequest {
 
 export interface QuizSubmissionResponse {
     score: number;
-    passed: boolean;
+    completed: boolean;
     message?: string;
 }
