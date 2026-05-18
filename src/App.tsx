@@ -19,6 +19,7 @@ import AchievementsPage from './pages/gamification/AchievementsPage';
 import ProfilePage from './pages/profile/ProfilePage';
 import ForumListPage from './pages/discussion/ForumListPage';
 import ForumDetailPage from './pages/discussion/ForumDetailPage';
+import TestDiscussionPage from './pages/discussion/ForumDetailPage.tsx';
 import { useAuth } from './context/AuthContext';
 
 // Placeholder for coming soon pages
@@ -86,8 +87,8 @@ function App() {
                 <Route path="/" element={<Home />} />
 
                 {/* ==================================
-            Rute Khusus Administrator
-            ================================== */}
+                Rute Khusus Administrator
+                ================================== */}
                 <Route
                     path="/admin"
                     element={
@@ -100,14 +101,15 @@ function App() {
                     <Route path="league" element={<AdminLeaguePage />} />
                     <Route path="achievements" element={<AdminAchievementsPage />} />
                     <Route path="daily-missions" element={<AdminDailyMissionsPage />} />
-                    {/* Rute Admin Modul Reading (Dari Branch-mu) */}
+                    {/* Rute Admin Modul Reading */}
                     <Route path="readings" element={<AdminReadingsPage />} />
                     <Route path="readings/:id/quiz-builder" element={<AdminQuizBuilderPage />} />
                 </Route>
 
                 {/* ==================================
-            Rute Pelajar / Umum
-            ================================== */}
+                Rute Pelajar / Umum
+                ================================== */}
+                
                 {/* Reading Routes */}
                 <Route path="/readings" element={<ReadingList />} />
                 <Route path="/readings/:id" element={<ReadingDetail />} />
@@ -124,9 +126,10 @@ function App() {
                 <Route path="/discover-clans" element={<ProtectedRoute><ClanDiscoverPage /></ProtectedRoute>} />
                 <Route path="/leaderboard" element={<ProtectedRoute><ClanLeaderboardPage /></ProtectedRoute>} />
 
-                {/* Forum Routes (Dari Staging) */}
+                {/* Forum Routes (Dari Staging & Feat) */}
                 <Route path="/forum" element={<ProtectedRoute><ForumListPage /></ProtectedRoute>} />
                 <Route path="/forum/:readingId" element={<ProtectedRoute><ForumDetailPage /></ProtectedRoute>} />
+                <Route path="/discussion-test" element={<TestDiscussionPage />} />
 
                 {/* Gamification & Profile Routes (Dari Staging) */}
                 <Route path="/achievements" element={<ProtectedRoute><AchievementsPage /></ProtectedRoute>} />

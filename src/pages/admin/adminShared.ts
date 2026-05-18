@@ -17,6 +17,7 @@ export const achievementTypes = [
   { label: 'Quizzes passed', value: 'quizzes_passed' },
   { label: 'Accuracy above', value: 'accuracy_above' },
   { label: 'Clan promoted', value: 'clan_promoted' },
+  { label: 'Ranking achieved', value: 'ranking_achieved' },
 ];
 
 export const missionTypes = [
