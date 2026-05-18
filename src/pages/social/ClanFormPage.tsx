@@ -41,6 +41,10 @@ const ClanFormPage: React.FC = () => {
       setError('Name and description are required');
       return;
     }
+    if (description.length > 255) {
+      setError('Description cannot exceed 255 characters');
+      return;
+    }
 
     try {
       setSubmitting(true);
@@ -120,15 +124,20 @@ const ClanFormPage: React.FC = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <label htmlFor="description" className="text-sm font-bold text-indigo-100/80">
-                    Description
-                  </label>
+                  <div className="flex justify-between items-center">
+                    <label htmlFor="description" className="text-sm font-bold text-indigo-100/80">
+                      Description
+                    </label>
+                    <span className="text-xs text-indigo-100/40 font-semibold">
+                      {description.length}/255
+                    </span>
+                  </div>
                   <textarea
                     id="description"
                     rows={4}
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
-                    maxLength={1000}
+                    maxLength={255}
                     placeholder="What is your clan about?"
                     className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/20 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 transition-all resize-none"
                     disabled={submitting}
