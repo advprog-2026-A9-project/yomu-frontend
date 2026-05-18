@@ -42,7 +42,6 @@ const getAuthHeaders = (): HeadersInit => {
 // ==========================================
 
 export const getAllCategories = async (): Promise<CategoryResponse[]> => {
-    // URL ?t=... sangat aman dan cukup untuk menipu cache browser tanpa kena blokir CORS
     const response = await fetch(`${BASE_URL}/api/categories?t=${new Date().getTime()}`, {
         method: "GET",
         headers: getAuthHeaders(),
@@ -122,6 +121,17 @@ export const deleteText = async (id: number): Promise<void> => {
     if (!response.ok) throw new Error(await parseErrorMessage(response, "Gagal menghapus teks bacaan"));
 };
 
+export const markReadingAsCompleted = async (id: string | number): Promise<void> => {
+    const response = await fetch(`${BASE_URL}/api/reading-texts/${id}/complete`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+    });
+
+    if (!response.ok) {
+        throw new Error(await parseErrorMessage(response, 'Gagal menandai bacaan selesai'));
+    }
+};
+
 // ==========================================
 // API FUNCTIONS : QUIZ & QUESTIONS
 // ==========================================
@@ -155,8 +165,6 @@ export const deleteQuestion = async (readingId: string | number, questionId: str
 };
 
 export const submitQuiz = async (id: string | number, payload: any): Promise<QuizSubmissionResponse> => {
-
-
     const formattedAnswers = Object.entries(payload.answers).map(([qId, oId]) => ({
         questionId: Number(qId),
         selectedOptionId: Number(oId)
@@ -165,7 +173,6 @@ export const submitQuiz = async (id: string | number, payload: any): Promise<Qui
     const response = await fetch(`${BASE_URL}/api/reading-texts/${id}/quiz`, {
         method: "POST",
         headers: getAuthHeaders(),
-
         body: JSON.stringify({ answers: formattedAnswers }),
     });
 
