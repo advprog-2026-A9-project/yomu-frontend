@@ -30,7 +30,7 @@ const menuItems: MenuItem[] = [
   { label: 'Achievements', path: '/achievements', icon: Award },
   { label: 'Clan', path: '/clan', icon: Shield },
   { label: 'Leaderboard', path: '/leaderboard', icon: Trophy },
-  { label: 'Forum', path: '/discussion-test', icon: MessageSquare },
+  { label: 'Forum', path: '/forum', icon: MessageSquare },
   { label: 'Settings', path: '/settings', icon: Settings },
 ];
 

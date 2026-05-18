@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import LandingPage from './landing/LandingPage';
 import DashboardHome from './dashboard/DashboardHome';
 
+
 function Home() {
     const { user, loading, isAuthenticated, isAdmin } = useAuth();
 

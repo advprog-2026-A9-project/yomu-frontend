@@ -11,21 +11,6 @@ type AuthUser = {
     clanTier?: string | null;
 };
 
-type AuthPayload = {
-    userId?: string;
-    username?: string;
-    role?: string;
-    token?: string;
-    message?: string;
-    data?: {
-        userId?: string;
-        username?: string;
-        role?: string;
-        token?: string;
-        message?: string;
-    };
-};
-
 type LoginCredentials = {
     identifier: string;
     password: string;
