@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Award, Lock, Unlock, Star, Trophy, Filter, Search, Inbox } from 'lucide-react';
 import Sidebar from '../../components/common/Sidebar';
-import { SectionHeader, SkeletonCard, SearchInput, Pagination } from '../../components/common/UI';
+import { SkeletonCard, SearchInput, Pagination } from '../../components/common/UI';
 import { useAuth } from '../../context/AuthContext';
 import { getMyAchievements, type AchievementProgress } from '../../services/gamificationAPI';
 import { getShowcase, updateShowcase } from '../../services/gamificationAPI';
@@ -34,10 +34,18 @@ export default function AchievementsPage() {
           getMyAchievements(userId),
           getShowcase(userId).catch(() => [] as string[]),
         ]);
-        if (!cancelled) { setAchievements(achData); setShowcaseIds(showcaseData); }
-      } catch { /* empty state */ } finally { if (!cancelled) setLoading(false); }
+        if (!cancelled) {
+          setAchievements(achData);
+          setShowcaseIds(showcaseData);
+        }
+      } catch { /* empty state */ }
+      finally {
+        if (!cancelled) setLoading(false);
+      }
     })();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [userId]);
 
   const unlockedCount = achievements.filter((a) => a.unlocked).length;
@@ -57,7 +65,11 @@ export default function AchievementsPage() {
   const safePage = Math.min(currentPage, totalPages);
   const paginated = filtered.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
 
-  function handleFilterChange(f: FilterMode) { setFilter(f); setCurrentPage(1); }
+  function handleFilterChange(f: FilterMode) {
+    setFilter(f);
+    setCurrentPage(1);
+  }
+
   function handleSearchChange(q: string) {
     if (q.length <= 50) {
       setSearchQuery(q);
@@ -71,7 +83,10 @@ export default function AchievementsPage() {
     if (isSelected) {
       next = showcaseIds.filter((id) => id !== achId);
     } else {
-      if (showcaseIds.length >= MAX_SHOWCASE) { showToast(`Maksimal ${MAX_SHOWCASE} achievement`); return; }
+      if (showcaseIds.length >= MAX_SHOWCASE) {
+        showToast(`Maksimal ${MAX_SHOWCASE} achievement`);
+        return;
+      }
       next = [...showcaseIds, achId];
     }
     setShowcaseIds(next);
@@ -79,11 +94,18 @@ export default function AchievementsPage() {
     try {
       await updateShowcase(userId, next);
       showToast(isSelected ? 'Dihapus dari showcase' : 'Ditambahkan ke showcase ✨');
-    } catch { setShowcaseIds(showcaseIds); showToast('Gagal menyimpan'); }
-    finally { setSaving(false); }
+    } catch {
+      setShowcaseIds(showcaseIds);
+      showToast('Gagal menyimpan');
+    } finally {
+      setSaving(false);
+    }
   }, [showcaseIds, userId]);
 
-  function showToast(msg: string) { setToast(msg); setTimeout(() => setToast(null), 2500); }
+  function showToast(msg: string) {
+    setToast(msg);
+    setTimeout(() => setToast(null), 2500);
+  }
 
   const showcaseAchs = showcaseIds
     .map((id) => achievements.find((a) => a.achievementId === id))
@@ -96,19 +118,26 @@ export default function AchievementsPage() {
   ];
 
   return (
-    <div className="flex min-h-screen">
+    <div className="yomu-shell yomu-grid-noise lg:flex">
       <Sidebar username={user?.username ?? ''} />
 
-      <main className="yomu-grid-noise min-h-screen flex-1 p-4 sm:p-8">
-        <div className="yomu-container">
-          <SectionHeader
-            eyebrow="Achievements"
-            title="Koleksi Pencapaian"
-            description="Kumpulkan pencapaian dan tampilkan 3 terbaik sebagai badge di profil kamu."
-          />
+      <div className="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto">
 
+        {/* Header */}
+        <header className="yomu-glass mb-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl px-4 py-3">
+          <div>
+            <p className="text-xs uppercase tracking-wide text-indigo-100/70">Achievements</p>
+            <h1 className="text-2xl font-bold text-white">Koleksi Pencapaian</h1>
+          </div>
+          <div className="flex items-center gap-1.5 text-xs text-indigo-200/50 bg-white/5 border border-white/5 rounded-xl px-3 py-1.5 font-medium">
+            <Trophy size={12} className="text-amber-400 animate-pulse" />
+            <span>Slot Showcase: {showcaseIds.length}/{MAX_SHOWCASE}</span>
+          </div>
+        </header>
+
+        <main className="space-y-6">
           {/* ── Showcase banner ── */}
-          <div className="mb-6 flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-amber-400/20 bg-gradient-to-br from-amber-400/[0.06] to-indigo-500/[0.06] px-5 py-4">
+          <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-amber-400/20 bg-gradient-to-br from-amber-400/[0.06] to-indigo-500/[0.06] px-5 py-4">
             <div>
               <h3 className="flex items-center gap-1.5 text-[0.9375rem] font-extrabold text-white">
                 <Star size={14} className="text-amber-300/70" />
@@ -142,7 +171,7 @@ export default function AchievementsPage() {
           </div>
 
           {/* ── Search + Filters ── */}
-          <div className="mb-6 flex flex-wrap items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
             <div className="min-w-[200px] max-w-xs flex-1">
               <SearchInput value={searchQuery} onChange={handleSearchChange} placeholder="Cari achievement..." />
             </div>
@@ -170,7 +199,7 @@ export default function AchievementsPage() {
 
           {/* ── Content ── */}
           {loading ? (
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {Array.from({ length: 6 }).map((_, i) => <SkeletonCard key={i} />)}
             </div>
           ) : filtered.length === 0 ? (
@@ -191,8 +220,8 @@ export default function AchievementsPage() {
               </p>
             </div>
           ) : (
-            <>
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
                 {paginated.map((ach, idx) => (
                   <AchievementCard
                     key={ach.achievementId}
@@ -206,19 +235,99 @@ export default function AchievementsPage() {
                 ))}
               </div>
               <Pagination currentPage={safePage} totalPages={totalPages} onPageChange={setCurrentPage} />
-            </>
+            </div>
           )}
-        </div>
+        </main>
 
         {toast && (
           <div className="ach-toast fixed bottom-6 left-1/2 z-50 -translate-x-1/2 rounded-xl border border-green-400/30 bg-green-900/90 px-5 py-3 text-[0.8125rem] font-semibold text-green-200 shadow-xl backdrop-blur-sm">
             {toast}
           </div>
         )}
-      </main>
+      </div>
     </div>
   );
 }
+
+/* ── Dynamic Achievement Tier Mapping & Styling ── */
+
+function getAchievementTier(threshold: number, type: string, name: string) {
+  const t = type ? type.toLowerCase() : '';
+  const n = name ? name.toLowerCase() : '';
+
+  if (t === 'readings_completed') {
+    if (threshold >= 300) return 'GODLIKE';
+    if (threshold >= 175) return 'MYTHIC';
+    if (threshold >= 100) return 'DIAMOND';
+    if (threshold >= 35) return 'GOLD';
+    if (threshold >= 10) return 'SILVER';
+    return 'BRONZE';
+  }
+  if (t === 'quizzes_passed') {
+    if (threshold >= 300) return 'GODLIKE';
+    if (threshold >= 175) return 'MYTHIC';
+    if (threshold >= 100) return 'DIAMOND';
+    if (threshold >= 40) return 'GOLD';
+    if (threshold >= 15) return 'SILVER';
+    return 'BRONZE';
+  }
+  if (t === 'accuracy_above') {
+    if (n.includes('eternal') || n.includes('ascended') || n.includes('godly')) return 'GODLIKE';
+    if (n.includes('impeccable') || n.includes('legend') || n.includes('centurion')) return 'MYTHIC';
+    if (threshold >= 98 || n.includes('divine')) return 'DIAMOND';
+    if (threshold >= 90) return 'GOLD';
+    if (threshold >= 80) return 'SILVER';
+    return 'BRONZE';
+  }
+  return 'BRONZE';
+}
+
+const TIER_STYLES: Record<
+  string,
+  {
+    cardClass: string;
+    progressBarClass: string;
+    iconClass: string;
+    iconColor: string;
+  }
+> = {
+  BRONZE: {
+    cardClass: 'tier-bronze',
+    progressBarClass: 'bg-gradient-to-r from-amber-700 to-amber-600',
+    iconClass: 'border-amber-700/35 bg-amber-950/20',
+    iconColor: '#b45309',
+  },
+  SILVER: {
+    cardClass: 'tier-silver',
+    progressBarClass: 'bg-gradient-to-r from-slate-400 to-slate-300',
+    iconClass: 'border-slate-500/35 bg-slate-950/20',
+    iconColor: '#cbd5e1',
+  },
+  GOLD: {
+    cardClass: 'tier-gold',
+    progressBarClass: 'bg-gradient-to-r from-amber-500 to-yellow-400',
+    iconClass: 'border-amber-500/35 bg-amber-950/20',
+    iconColor: '#fbbf24',
+  },
+  DIAMOND: {
+    cardClass: 'tier-diamond',
+    progressBarClass: 'bg-gradient-to-r from-cyan-500 to-blue-400 shadow-[0_0_10px_rgba(6,182,212,0.5)]',
+    iconClass: 'border-cyan-500/35 bg-cyan-950/20',
+    iconColor: '#22d3ee',
+  },
+  MYTHIC: {
+    cardClass: 'tier-mythic',
+    progressBarClass: 'bg-gradient-to-r from-purple-600 via-fuchsia-500 to-purple-600 shadow-[0_0_12px_rgba(168,85,247,0.7)] animate-mythic-progress',
+    iconClass: 'border-purple-500/40 bg-purple-950/30',
+    iconColor: '#c084fc',
+  },
+  GODLIKE: {
+    cardClass: 'tier-godlike',
+    progressBarClass: 'bg-gradient-to-r from-red-500 via-rose-500 to-amber-500 shadow-[0_0_15px_rgba(244,63,94,0.8)] animate-mythic-progress',
+    iconClass: 'border-red-500/50 bg-red-950/40',
+    iconColor: '#f43f5e',
+  },
+};
 
 /* ── Achievement Card ── */
 
@@ -231,44 +340,47 @@ function AchievementCard({
   const { unlocked, achievementName, milestone, milestoneType, progressValue, milestoneThreshold } = achievement;
   const pct = milestoneThreshold > 0 ? Math.min(100, (progressValue / milestoneThreshold) * 100) : 0;
 
-  const cardBorder = isShowcased
-    ? 'border-amber-400/40 shadow-[0_0_20px_rgba(255,198,74,0.06)]'
-    : unlocked
-      ? 'border-green-400/20'
-      : 'border-white/10 opacity-65 hover:opacity-80';
+  const tierKey = getAchievementTier(milestoneThreshold, milestoneType, achievementName);
+  const styles = TIER_STYLES[tierKey] || TIER_STYLES.BRONZE;
 
   return (
     <div
-      className={`ach-card ${unlocked ? 'unlocked' : ''} ${isShowcased ? 'showcased' : ''} relative overflow-hidden rounded-2xl border bg-white/[0.04] p-5 backdrop-blur-md transition-all duration-300 hover:-translate-y-0.5 hover:border-indigo-300/35 hover:bg-white/[0.07] ${cardBorder} animate-fade-rise`}
+      className={`ach-card relative overflow-hidden rounded-2xl border bg-white/[0.04] p-6 backdrop-blur-md ${
+        unlocked ? `unlocked ${styles.cardClass}` : 'opacity-65 hover:opacity-80 border-white/10 hover:-translate-y-1 hover:border-indigo-300/35 hover:bg-white/[0.07]'
+      } ${
+        isShowcased
+          ? 'showcased border-amber-400/60 shadow-[0_0_25px_rgba(255,198,74,0.15)] ring-1 ring-amber-400/20'
+          : ''
+      } animate-fade-rise`}
       style={{ animationDelay: `${delay}ms` }}
     >
       {/* Header */}
-      <div className="mb-3 flex items-start gap-3">
-        <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border ${unlocked ? 'border-green-400/25 bg-gradient-to-br from-green-400/15 to-green-600/[0.08]' : 'border-white/10 bg-white/5'}`}>
-          {unlocked ? <Trophy size={20} className="text-green-400" /> : <Lock size={20} className="text-indigo-100/35" />}
+      <div className="mb-3 flex items-start gap-3 relative z-10">
+        <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border ${unlocked ? styles.iconClass : 'border-white/10 bg-white/5'}`}>
+          {unlocked ? <Trophy size={20} color={styles.iconColor} /> : <Lock size={20} className="text-indigo-100/35" />}
         </div>
         <div className="min-w-0 flex-1">
           <h4 className="text-[0.9375rem] font-bold leading-snug text-white">{achievementName}</h4>
-          <p className="text-xs text-indigo-100/50">{milestoneType}</p>
+          <p className="text-xs text-indigo-100/50 font-mono tracking-wide">{milestoneType}</p>
         </div>
       </div>
 
       {/* Description */}
-      <p className="mb-3 text-[0.8125rem] leading-relaxed text-indigo-100/65">{milestone}</p>
+      <p className="mb-3 text-[0.8125rem] leading-relaxed text-indigo-100/65 relative z-10">{milestone}</p>
 
       {/* Progress */}
-      <div className="mb-3 flex items-center gap-3">
+      <div className="mb-3 flex items-center gap-3 relative z-10">
         <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-white/[0.08]">
           <div
-            className={`h-full rounded-full transition-all duration-500 ${unlocked ? 'bg-gradient-to-r from-green-400 to-green-500' : 'bg-gradient-to-r from-indigo-400 to-violet-400'}`}
+            className={`h-full rounded-full transition-all duration-500 ${unlocked ? styles.progressBarClass : 'bg-gradient-to-r from-indigo-400 to-violet-400'}`}
             style={{ width: `${pct}%` }}
           />
         </div>
-        <span className="text-[0.6875rem] font-bold text-indigo-100/60">{progressValue}/{milestoneThreshold}</span>
+        <span className="text-[0.6875rem] font-extrabold text-indigo-100/60 font-mono">{progressValue}/{milestoneThreshold}</span>
       </div>
 
       {/* Footer */}
-      <div className="flex items-center justify-between gap-2">
+      <div className="flex items-center justify-between gap-2 relative z-10">
         {!unlocked ? (
           <span className="rounded-full border border-white/10 bg-white/5 px-2.5 py-0.5 text-[0.6875rem] font-bold uppercase tracking-wide text-indigo-100/45">
             Terkunci

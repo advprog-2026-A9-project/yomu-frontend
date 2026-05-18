@@ -15,6 +15,7 @@ import AdminLeaguePage from './pages/admin/AdminLeaguePage';
 import AdminAchievementsPage from './pages/admin/AdminAchievementsPage';
 import AdminDailyMissionsPage from './pages/admin/AdminDailyMissionsPage';
 import AchievementsPage from './pages/gamification/AchievementsPage';
+import ProfilePage from './pages/profile/ProfilePage';
 import ForumListPage from './pages/discussion/ForumListPage';
 import ForumDetailPage from './pages/discussion/ForumDetailPage';
 import { useAuth } from './context/AuthContext';
@@ -119,7 +120,8 @@ function App() {
 
         {/* Coming soon pages */}
         <Route path="/achievements" element={<ProtectedRoute><AchievementsPage /></ProtectedRoute>} />
-        <Route path="/profile" element={<ComingSoonPage />} />
+        <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+        <Route path="/profile/:userId" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
         <Route path="/settings" element={<ComingSoonPage />} />
       </Routes>
     </Router>
