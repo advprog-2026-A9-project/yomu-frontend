@@ -109,7 +109,7 @@ export default function LandingPage() {
           <SectionHeader
             eyebrow="Fitur Utama"
             title="Semua alat belajar kritis dalam satu ekosistem"
-            description="Dirancang untuk pelajar dan admin dengan alur yang konsisten, progresif, dan terukur."
+            description="Dirancang untuk pelajar dengan alur yang konsisten, progresif, dan terukur."
           />
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {features.map((item) => (
@@ -198,7 +198,7 @@ export default function LandingPage() {
               Daftar Gratis
             </Link>
             <Link to="/login" className="yomu-button-secondary">
-              Login Pelajar/Admin
+              Login Pelajar
             </Link>
           </div>
         </section>

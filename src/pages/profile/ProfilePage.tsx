@@ -18,6 +18,46 @@ import Sidebar from '../../components/common/Sidebar';
 import { TierBadge } from '../../components/common/UI';
 import { getUserProfile, updateMyBio, UserProfile } from '../../services/profileAPI';
 
+const TIER_STYLES: Record<
+  string,
+  {
+    cardClass: string;
+    iconClass: string;
+    iconColor: string;
+  }
+> = {
+  BRONZE: {
+    cardClass: 'tier-bronze',
+    iconClass: 'border-amber-700/35 bg-amber-950/20',
+    iconColor: '#b45309',
+  },
+  SILVER: {
+    cardClass: 'tier-silver',
+    iconClass: 'border-slate-500/35 bg-slate-950/20',
+    iconColor: '#cbd5e1',
+  },
+  GOLD: {
+    cardClass: 'tier-gold',
+    iconClass: 'border-amber-500/35 bg-amber-950/20',
+    iconColor: '#fbbf24',
+  },
+  DIAMOND: {
+    cardClass: 'tier-diamond',
+    iconClass: 'border-cyan-500/35 bg-cyan-950/20',
+    iconColor: '#22d3ee',
+  },
+  MYTHIC: {
+    cardClass: 'tier-mythic',
+    iconClass: 'border-purple-500/40 bg-purple-950/30',
+    iconColor: '#c084fc',
+  },
+  GODLIKE: {
+    cardClass: 'tier-godlike',
+    iconClass: 'border-red-500/50 bg-red-950/40',
+    iconColor: '#f43f5e',
+  },
+};
+
 const ProfilePage: React.FC = () => {
   const { userId } = useParams<{ userId: string }>();
   const { user } = useAuth();
@@ -112,16 +152,16 @@ const ProfilePage: React.FC = () => {
 
             {/* Stats & Clan Skeleton */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <div className="lg:col-span-1 space-y-4">
+              <div className="lg:col-span-1 flex flex-col space-y-4">
                 <div className="h-6 w-36 bg-white/5 rounded-lg animate-pulse" />
-                <div className="yomu-glass rounded-2xl p-6 sm:p-8 h-48 bg-white/5 animate-pulse" />
+                <div className="yomu-glass rounded-2xl p-6 sm:p-8 flex-1 min-h-[146px] bg-white/5 animate-pulse" />
               </div>
-              <div className="lg:col-span-2 space-y-4">
+              <div className="lg:col-span-2 flex flex-col space-y-4">
                 <div className="h-6 w-36 bg-white/5 rounded-lg animate-pulse" />
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-                  <div className="yomu-glass rounded-2xl p-6 h-36 bg-white/5 animate-pulse" />
-                  <div className="yomu-glass rounded-2xl p-6 h-36 bg-white/5 animate-pulse" />
-                  <div className="yomu-glass rounded-2xl p-6 h-36 bg-white/5 animate-pulse" />
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 flex-1">
+                  <div className="yomu-glass rounded-2xl p-6 min-h-[146px] bg-white/5 animate-pulse" />
+                  <div className="yomu-glass rounded-2xl p-6 min-h-[146px] bg-white/5 animate-pulse" />
+                  <div className="yomu-glass rounded-2xl p-6 min-h-[146px] bg-white/5 animate-pulse" />
                 </div>
               </div>
             </div>
@@ -292,36 +332,37 @@ const ProfilePage: React.FC = () => {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
             {/* Left Column: Clan Card */}
-            <div className="lg:col-span-1 space-y-4">
+            <div className="lg:col-span-1 flex flex-col space-y-4">
               <h2 className="text-lg font-bold text-white flex items-center gap-2">
                 <Shield size={18} className="text-indigo-400" />
-                Clan Terdaftar
+                Clan
               </h2>
 
               {profile.clanName ? (
-                <div className="yomu-glass rounded-2xl p-6 sm:p-8 border-white/5 hover:border-indigo-500/20 transition-all duration-300 space-y-5 animate-fade-rise relative overflow-hidden group">
+                <div className="yomu-glass rounded-2xl p-6 border-white/5 hover:border-indigo-500/20 transition-all duration-300 flex flex-col justify-between flex-1 min-h-[146px] animate-fade-rise relative overflow-hidden group">
                   <div className="absolute inset-0 bg-indigo-500/[0.01] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
                   <div className="flex items-center justify-between relative z-10">
-                    <div className="w-12 h-12 bg-indigo-500/10 rounded-xl flex items-center justify-center text-indigo-400 border border-indigo-500/20">
-                      <Shield size={24} />
+                    <div className="w-10 h-10 bg-indigo-500/10 rounded-xl flex items-center justify-center text-indigo-400 border border-indigo-500/20">
+                      <Shield size={20} />
                     </div>
                     <TierBadge tier={profile.clanTier!} />
                   </div>
 
-                  <div className="space-y-1 relative z-10">
-                    <h3 className="font-extrabold text-white text-lg tracking-tight group-hover:text-indigo-300 transition-colors">
+                  <div className="space-y-0.5 relative z-10">
+                    <h3 className="font-extrabold text-white text-lg tracking-tight group-hover:text-indigo-300 transition-colors truncate">
                       {profile.clanName}
                     </h3>
+                    <p className="text-xs font-semibold text-indigo-200/50">Nama Clan</p>
                   </div>
                 </div>
               ) : (
-                <div className="yomu-glass rounded-2xl p-6 sm:p-8 border-white/5 text-center py-10 space-y-4 animate-fade-rise">
-                  <Shield size={36} className="text-indigo-100/20 mx-auto" />
-                  <div className="space-y-1">
+                <div className="yomu-glass rounded-2xl p-6 border-white/5 text-center flex-1 min-h-[146px] flex flex-col justify-center items-center space-y-2 animate-fade-rise">
+                  <Shield size={28} className="text-indigo-100/20" />
+                  <div className="space-y-0.5">
                     <h3 className="font-bold text-white text-sm">Belum Ada Clan</h3>
-                    <p className="text-xs text-indigo-100/50 max-w-xs mx-auto">
-                      User ini belum bergabung ke clan manapun untuk saat ini.
+                    <p className="text-[10px] text-indigo-100/50 max-w-[180px] mx-auto leading-normal">
+                      User ini belum bergabung ke clan manapun saat ini.
                     </p>
                   </div>
                 </div>
@@ -329,16 +370,16 @@ const ProfilePage: React.FC = () => {
             </div>
 
             {/* Right Column: Statistics Grid */}
-            <div className="lg:col-span-2 space-y-4">
+            <div className="lg:col-span-2 flex flex-col space-y-4">
               <h2 className="text-lg font-bold text-white flex items-center gap-2">
                 <Trophy size={18} className="text-amber-400" />
                 Statistik Membaca
               </h2>
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 flex-1">
 
                 {/* Stat 1 */}
-                <div className="yomu-glass rounded-2xl p-6 border-white/5 hover:border-white/10 transition-colors animate-fade-rise">
+                <div className="yomu-glass rounded-2xl p-6 border-white/5 hover:border-white/10 transition-colors animate-fade-rise flex flex-col justify-between">
                   <div className="text-indigo-400 bg-indigo-500/10 p-2 w-fit rounded-lg mb-4">
                     <BookOpen size={20} />
                   </div>
@@ -349,7 +390,7 @@ const ProfilePage: React.FC = () => {
                 </div>
 
                 {/* Stat 2 */}
-                <div className="yomu-glass rounded-2xl p-6 border-white/5 hover:border-white/10 transition-colors animate-fade-rise" style={{ animationDelay: '0.1s' }}>
+                <div className="yomu-glass rounded-2xl p-6 border-white/5 hover:border-white/10 transition-colors animate-fade-rise flex flex-col justify-between" style={{ animationDelay: '0.1s' }}>
                   <div className="text-amber-400 bg-amber-500/10 p-2 w-fit rounded-lg mb-4">
                     <Zap size={20} />
                   </div>
@@ -360,7 +401,7 @@ const ProfilePage: React.FC = () => {
                 </div>
 
                 {/* Stat 3 */}
-                <div className="yomu-glass rounded-2xl p-6 border-white/5 hover:border-white/10 transition-colors animate-fade-rise" style={{ animationDelay: '0.2s' }}>
+                <div className="yomu-glass rounded-2xl p-6 border-white/5 hover:border-white/10 transition-colors animate-fade-rise flex flex-col justify-between" style={{ animationDelay: '0.2s' }}>
                   <div className="text-emerald-400 bg-emerald-500/10 p-2 w-fit rounded-lg mb-4">
                     <CheckCircle2 size={20} />
                   </div>
@@ -379,7 +420,7 @@ const ProfilePage: React.FC = () => {
             <div className="flex items-center gap-2">
               <h2 className="text-lg font-bold text-white flex items-center gap-2">
                 <Award size={18} className="text-pink-400" />
-                Achievements Showcase
+                Achievements
               </h2>
               <div className="h-[1px] flex-1 bg-white/10" />
             </div>
@@ -390,38 +431,30 @@ const ProfilePage: React.FC = () => {
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {profile.showcaseAchievements.map((ach, idx) => (
-                  <div
-                    key={ach.id}
-                    className="yomu-glass rounded-2xl p-6 border-white/5 transition-all duration-300 hover:-translate-y-1 hover:border-indigo-500/30 hover:bg-white/10 hover:shadow-xl hover:shadow-indigo-500/5 group flex items-start gap-4 animate-fade-rise"
-                    style={{ animationDelay: `${idx * 0.1}s` }}
-                  >
-                    <div className={`p-3 bg-white/5 rounded-2xl border border-white/10 shadow-inner group-hover:scale-110 transition-transform ${ach.iconColor}`}>
-                      <Award size={24} />
-                    </div>
+                {profile.showcaseAchievements.map((ach, idx) => {
+                  const styles = TIER_STYLES[ach.tier] || TIER_STYLES.BRONZE;
 
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2">
-                        <h3 className="font-extrabold text-white text-sm group-hover:text-indigo-200 transition-colors">
-                          {ach.name}
-                        </h3>
-
-                        <span className={`text-[8px] font-black uppercase px-1.5 py-0.5 rounded tracking-wider border
-                          ${ach.tier === 'DIAMOND' ? 'bg-indigo-500/20 text-indigo-300 border-indigo-500/20' : ''}
-                          ${ach.tier === 'GOLD' ? 'bg-amber-500/20 text-amber-300 border-amber-500/20' : ''}
-                          ${ach.tier === 'SILVER' ? 'bg-slate-500/20 text-slate-300 border-slate-500/20' : ''}
-                          ${ach.tier === 'BRONZE' ? 'bg-amber-800/20 text-amber-200 border-amber-800/20' : ''}
-                        `}>
-                          {ach.tier}
-                        </span>
+                  return (
+                    <div
+                      key={ach.id}
+                      className={`ach-card relative overflow-hidden rounded-2xl border bg-white/[0.04] p-6 backdrop-blur-md unlocked ${styles.cardClass} showcased border-amber-400/60 shadow-[0_0_25px_rgba(255,198,74,0.15)] ring-1 ring-amber-400/20 group flex items-start gap-4 animate-fade-rise`}
+                      style={{ animationDelay: `${idx * 0.1}s` }}
+                    >
+                      <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border relative z-10 transition-transform duration-300 group-hover:scale-110 ${styles.iconClass}`}>
+                        <Trophy size={20} color={styles.iconColor} />
                       </div>
 
-                      <p className="text-xs text-indigo-100/50 font-medium">
-                        {ach.description}
-                      </p>
+                      <div className="space-y-1 relative z-10 min-w-0 flex-1">
+                        <h3 className="font-extrabold text-white text-sm group-hover:text-indigo-200 transition-colors truncate">
+                          {ach.name}
+                        </h3>
+                        <p className="text-xs text-indigo-100/50 font-medium">
+                          {ach.description}
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </section>

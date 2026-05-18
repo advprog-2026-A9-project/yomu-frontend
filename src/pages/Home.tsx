@@ -1,16 +1,10 @@
-import { Navigate, useNavigate } from 'react-router-dom';
+import { Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import LandingPage from './landing/LandingPage';
 import DashboardHome from './dashboard/DashboardHome';
 
 function Home() {
-    const { user, loading, isAuthenticated, isAdmin, logout } = useAuth();
-    const navigate = useNavigate();
-
-    const handleLogout = () => {
-        logout();
-        navigate('/');
-    };
+    const { user, loading, isAuthenticated, isAdmin } = useAuth();
 
     if (loading) {
         return (
@@ -32,16 +26,7 @@ function Home() {
     }
 
     return (
-        <div className="relative">
-            <button
-                type="button"
-                onClick={handleLogout}
-                className="fixed right-4 top-4 z-40 rounded-xl border border-red-300/30 bg-red-500/20 px-4 py-2 text-xs font-bold text-red-100 backdrop-blur hover:bg-red-500/30"
-            >
-                Logout ({user?.role ?? 'PELAJAR'})
-            </button>
-            <DashboardHome username={user?.username || 'Pelajar'} loading={false} />
-        </div>
+        <DashboardHome username={user?.username || 'Pelajar'} loading={false} />
     );
 }
 
