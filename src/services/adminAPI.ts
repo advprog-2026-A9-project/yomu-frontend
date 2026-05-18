@@ -36,6 +36,7 @@ export interface AchievementAdminRecord {
     milestone: string;
     milestoneType: string;
     milestoneThreshold: number;
+    tier?: string | null;
     earnedCount: number;
     active: boolean;
 }
@@ -57,6 +58,7 @@ export interface AchievementAdminPayload {
     milestone: string;
     milestoneType: string;
     milestoneThreshold: number;
+    tier?: string | null;
 }
 
 export interface DailyMissionAdminPayload {

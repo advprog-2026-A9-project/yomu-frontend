@@ -42,8 +42,7 @@ export interface ShowcaseAchievement {
     id: string;
     name: string;
     description: string;
-    tier: 'BRONZE' | 'SILVER' | 'GOLD' | 'DIAMOND';
-    iconColor: string;
+    tier: string;
 }
 
 export interface UserProfile {
@@ -53,7 +52,7 @@ export interface UserProfile {
     bio: string;
     joinedDate: string;
     clanName?: string;
-    clanTier?: 'BRONZE' | 'SILVER' | 'GOLD' | 'DIAMOND';
+    clanTier?: string;
     readingStats: ReadingStats;
     showcaseAchievements: ShowcaseAchievement[];
 }
