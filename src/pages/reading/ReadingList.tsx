@@ -1,114 +1,131 @@
 import { useEffect, useState } from 'react';
-import { getAllTexts, deleteText } from '../../services/readingTextAPI';
-import type { ReadingTextResponse } from '../../services/readingTextAPI';
-import { useAuth } from '../../context/AuthContext';
-import CreateReadingForm from '../../components/reading/CreateReadingForm';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { BookOpen, Compass, Search, ArrowLeft } from 'lucide-react';
+import { getAllTexts, getAllCategories } from '../../services/readingAPI';
+import type { ReadingTextResponse, CategoryResponse } from '../../types/reading';
 
 export default function ReadingList() {
+    const navigate = useNavigate();
     const [readings, setReadings] = useState<ReadingTextResponse[]>([]);
-    const [status, setStatus] = useState<string>('Loading...');
-    const [showForm, setShowForm] = useState(false);
-    // const { isAdmin, loading } = useAuth();
-    const isAdmin = true;
-    const loading = false;
-
-    const fetchReadings = async () => {
-        try {
-            setStatus('Loading...');
-            const data = await getAllTexts();
-            setReadings(data);
-            setStatus('Success');
-        } catch (err: unknown) {
-            setStatus('Error: ' + (err instanceof Error ? err.message : 'Unknown error'));
-        }
-    };
+    const [categories, setCategories] = useState<CategoryResponse[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [selectedCategory, setSelectedCategory] = useState<string>('All');
+    const [searchQuery, setSearchQuery] = useState('');
 
     useEffect(() => {
-        fetchReadings();
+        const fetchData = async () => {
+            try {
+                setLoading(true);
+                const [textsData, categoriesData] = await Promise.all([
+                    getAllTexts(),
+                    getAllCategories()
+                ]);
+                setReadings(textsData);
+                setCategories(categoriesData);
+            } catch (err) {
+                console.error('Gagal mengambil data:', err);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchData();
     }, []);
 
-    const handleDelete = async (id: number) => {
-        if (!window.confirm('Apakah Anda yakin ingin menghapus teks bacaan ini?')) return;
-        try {
-            await deleteText(id);
-            fetchReadings();
-        } catch (err: unknown) {
-            alert('Gagal menghapus: ' + (err instanceof Error ? err.message : 'Unknown error'));
-        }
-    };
+    // Logika Filter
+    const filteredReadings = readings.filter(book => {
+        const matchCategory = selectedCategory === 'All' || book.categoryName === selectedCategory;
+        const matchSearch = book.title.toLowerCase().includes(searchQuery.toLowerCase());
+        return matchCategory && matchSearch;
+    });
 
-    const handleFormSuccess = () => {
-        setShowForm(false);
-        fetchReadings();
-    };
+    if (loading) {
+        return (
+            <div className="min-h-screen bg-slate-950 flex justify-center items-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-500"></div>
+            </div>
+        );
+    }
 
     return (
-        <div className="min-h-screen bg-gray-900 text-white p-10 font-sans">
-            <h1 className="text-4xl font-bold mb-6 text-blue-400 text-center">Yomu Library</h1>
-
-            <div className="flex justify-center mb-8">
-                <span className={`px-4 py-2 rounded-full font-semibold ${
-                    status === 'Success' ? 'bg-green-900 text-green-300'
-                        : status.startsWith('Error') ? 'bg-red-900 text-red-300'
-                            : 'bg-yellow-900 text-yellow-300'
-                }`}>
-                    Backend Status: {status}
-                </span>
-            </div>
-
-            {/* Tombol Tambah Teks (Hanya Admin) */}
-            {!loading && isAdmin && !showForm && (
-                <div className="flex justify-center mb-6 max-w-6xl mx-auto">
-                    <button
-                        onClick={() => setShowForm(true)}
-                        className="bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 px-6 rounded shadow-lg transition"
-                    >
-                        + Tambah Teks Bacaan Baru
+        <div className="min-h-screen bg-slate-950 text-white p-6 md:p-10 font-sans">
+            <div className="max-w-6xl mx-auto space-y-8">
+                {/* HEADER */}
+                <div className="text-center space-y-4">
+                    <button onClick={() => navigate('/')} className="text-indigo-300 hover:text-white flex items-center gap-2 font-medium">
+                        <ArrowLeft size={18} /> Dashboard
                     </button>
+                    <h1 className="text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400 inline-block">
+                        Yomu Library
+                    </h1>
+                    <p className="text-indigo-200/70 max-w-xl mx-auto">
+                        Jelajahi berbagai artikel dan bacaan untuk meningkatkan literasi dan kemampuan berpikir kritismu.
+                    </p>
                 </div>
-            )}
 
-            {/* Form Pembuatan Teks */}
-            {!loading && isAdmin && showForm && (
-                <CreateReadingForm
-                    onSuccess={handleFormSuccess}
-                    onCancel={() => setShowForm(false)}
-                />
-            )}
+                {/* SEARCH & FILTER SECTION */}
+                <div className="bg-slate-900/50 backdrop-blur-md border border-white/10 rounded-2xl p-4 md:p-6 shadow-xl flex flex-col md:flex-row gap-4 justify-between items-center">
+                    {/* Tabs Kategori */}
+                    <div className="flex flex-wrap gap-2 justify-center">
+                        <button
+                            onClick={() => setSelectedCategory('All')}
+                            className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${selectedCategory === 'All' ? 'bg-indigo-600 text-white shadow-lg' : 'bg-white/5 text-indigo-200 hover:bg-white/10'}`}
+                        >
+                            Semua
+                        </button>
+                        {categories.map(cat => (
+                            <button
+                                key={cat.id}
+                                onClick={() => setSelectedCategory(cat.name)}
+                                className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${selectedCategory === cat.name ? 'bg-indigo-600 text-white shadow-lg' : 'bg-white/5 text-indigo-200 hover:bg-white/10'}`}
+                            >
+                                {cat.name}
+                            </button>
+                        ))}
+                    </div>
 
-            {/* Daftar Teks Bacaan */}
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 max-w-6xl mx-auto">
-                {readings.length === 0 && status === 'Success' ? (
-                    <p className="text-gray-400 col-span-full text-center">Belum ada teks bacaan tersedia.</p>
+                    {/* Search Bar */}
+                    <div className="relative w-full md:w-64">
+                        <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-indigo-200/50" />
+                        <input
+                            type="text"
+                            placeholder="Cari judul..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="w-full bg-slate-950 border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-sm focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all"
+                        />
+                    </div>
+                </div>
+
+                {/* GRID BACAAN */}
+                {filteredReadings.length === 0 ? (
+                    <div className="text-center py-20 bg-slate-900/30 rounded-3xl border border-dashed border-white/10">
+                        <Compass size={48} className="mx-auto text-indigo-500/50 mb-4" />
+                        <p className="text-indigo-200/50 font-medium">Tidak ada teks bacaan yang sesuai dengan filter/pencarianmu.</p>
+                    </div>
                 ) : (
-                    readings.map((book) => (
-                        <div key={book.id} className="...">
-                            <div>
-                                <h2 className="text-xl font-bold text-white mb-2">{book.title}</h2>
-                                {/* ... */}
-                            </div>
-
-                            <div className="flex flex-col gap-2 mt-4">
-                                {/* Tombol untuk masuk ke detail bacaan */}
-                                <Link
-                                    to={`/reading/${book.id}`}
-                                    className="w-full bg-blue-600 hover:bg-blue-700 text-center text-white font-semibold py-2 px-4 rounded transition"
-                                >
-                                    Baca & Mulai Kuis
-                                </Link>
-
-                                {!loading && isAdmin && (
-                                    <button
-                                        onClick={() => handleDelete(book.id)}
-                                        className="w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded transition"
+                    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                        {filteredReadings.map((book) => (
+                            <div key={book.id} className="group relative bg-slate-900/60 border border-white/10 rounded-2xl p-6 hover:bg-slate-800/80 hover:border-indigo-500/50 transition-all duration-300 shadow-xl flex flex-col justify-between min-h-[220px]">
+                                <div>
+                                    <span className="inline-block px-3 py-1 mb-4 text-xs font-bold bg-indigo-500/10 text-indigo-300 rounded-lg border border-indigo-500/20">
+                                        {book.categoryName}
+                                    </span>
+                                    <h2 className="text-xl font-bold text-white mb-2 group-hover:text-indigo-300 transition-colors line-clamp-2">
+                                        {book.title}
+                                    </h2>
+                                </div>
+                                <div className="mt-6 pt-4 border-t border-white/5">
+                                    <Link
+                                        to={`/readings/${book.id}`}
+                                        className="w-full flex justify-center items-center gap-2 bg-indigo-600/10 hover:bg-indigo-600 text-indigo-300 hover:text-white border border-indigo-500/30 font-bold py-2.5 px-4 rounded-xl transition-all"
                                     >
-                                        Hapus Teks
-                                    </button>
-                                )}
+                                        <BookOpen size={16} />
+                                        Mulai Membaca
+                                    </Link>
+                                </div>
                             </div>
-                        </div>
-                    ))
+                        ))}
+                    </div>
                 )}
             </div>
         </div>
