@@ -5,7 +5,7 @@ import ReadingDetail from './pages/reading/ReadingDetail.tsx';
 import ReadingQuiz from './pages/reading/ReadingQuiz.tsx';
 import RegisterPage from './pages/auth/RegisterPage';
 import LoginPage from './pages/auth/LoginPage';
-import TestDiscussionPage from './pages/discussion/TestDiscussionPage';
+import TestDiscussionPage from './pages/discussion/ForumDetailPage.tsx';
 import ClanPageContainer from './pages/social/ClanPageContainer';
 import ClanFormPage from './pages/social/ClanFormPage';
 import ClanDiscoverPage from './pages/social/ClanDiscoverPage';
@@ -15,6 +15,8 @@ import AdminLeaguePage from './pages/admin/AdminLeaguePage';
 import AdminAchievementsPage from './pages/admin/AdminAchievementsPage';
 import AdminDailyMissionsPage from './pages/admin/AdminDailyMissionsPage';
 import AchievementsPage from './pages/gamification/AchievementsPage';
+import ForumListPage from './pages/discussion/ForumListPage';
+import ForumDetailPage from './pages/discussion/ForumDetailPage';
 import { useAuth } from './context/AuthContext';
 
 // Placeholder for coming soon pages
@@ -112,7 +114,8 @@ function App() {
         {/* Leaderboard */}
 
         {/* Forum */}
-        <Route path="/discussion-test" element={<TestDiscussionPage />} />
+        <Route path="/forum" element={<ProtectedRoute><ForumListPage /></ProtectedRoute>} />
+        <Route path="/forum/:readingId" element={<ProtectedRoute><ForumDetailPage /></ProtectedRoute>} />
 
         {/* Coming soon pages */}
         <Route path="/achievements" element={<ProtectedRoute><AchievementsPage /></ProtectedRoute>} />
