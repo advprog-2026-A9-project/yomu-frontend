@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, BookOpen, AlertTriangle, CheckCircle2 } from 'lucide-react';
-import { getReadingById, getCompletionStatus } from '../../services/readingAPI';
+import { ArrowLeft, BookOpen, AlertTriangle, CheckCircle2, Check } from 'lucide-react';
+import { getReadingById, getCompletionStatus, markReadingAsCompleted } from '../../services/readingAPI';
 import type { ReadingTextResponse } from '../../types/reading';
 
 export default function ReadingDetail() {
@@ -12,6 +12,12 @@ export default function ReadingDetail() {
     const [completion, setCompletion] = useState<{ completed: boolean; score: number }>({ completed: false, score: 0 });
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string>('');
+
+    // State baru untuk Event Selesai Membaca
+    const [hasRead, setHasRead] = useState<boolean>(() => {
+        return localStorage.getItem(`read_text_${id}`) === 'true';
+    });
+    const [isCompleting, setIsCompleting] = useState<boolean>(false);
 
     useEffect(() => {
         const fetchAllData = async () => {
@@ -36,6 +42,21 @@ export default function ReadingDetail() {
 
         fetchAllData();
     }, [id]);
+
+    // Fungsi untuk menandai bacaan selesai dan melempar Event
+    const handleCompleteReading = async () => {
+        if (!id) return;
+        try {
+            setIsCompleting(true);
+            await markReadingAsCompleted(id);
+            setHasRead(true);
+            localStorage.setItem(`read_text_${id}`, 'true');
+        } catch (err: unknown) {
+            alert(err instanceof Error ? err.message : 'Gagal menandai bacaan selesai');
+        } finally {
+            setIsCompleting(false);
+        }
+    };
 
     const handleStartQuiz = () => {
         navigate(`/readings/${id}/quiz`);
@@ -70,6 +91,31 @@ export default function ReadingDetail() {
         );
     }
 
+    // 💡 LOGIKA WARNA & PESAN ADAPTIF UNTUK SKOR
+    let scoreColor = 'text-green-400';
+    let scoreBg = 'bg-green-500/10';
+    let scoreBorder = 'border-green-500/20';
+    let scoreMessage = 'Luar biasa! Kamu sudah berhasil menguji pemahamanmu untuk materi ini. Silakan lanjut bereksplorasi di library.';
+
+    if (completion.completed) {
+        if (completion.score >= 80) {
+            scoreColor = 'text-green-400';
+            scoreBg = 'bg-green-500/10';
+            scoreBorder = 'border-green-500/20';
+            scoreMessage = 'Luar Biasa! 🎉 Tingkat pemahaman literasimu sangat baik. Silakan lanjut bereksplorasi di library.';
+        } else if (completion.score >= 50) {
+            scoreColor = 'text-amber-400';
+            scoreBg = 'bg-amber-500/10';
+            scoreBorder = 'border-amber-500/20';
+            scoreMessage = 'Bagus! 📈 Kamu telah menyelesaikan kuis ini. Tingkatkan terus fokus literasimu ya!';
+        } else {
+            scoreColor = 'text-red-400';
+            scoreBg = 'bg-red-500/10';
+            scoreBorder = 'border-red-500/20';
+            scoreMessage = 'Jangan Menyerah! 💪 Teruslah membaca dan berlatih. Setiap progres adalah pencapaian!';
+        }
+    }
+
     return (
         <div className="min-h-screen bg-slate-950 text-slate-200 p-6 md:p-10 font-sans">
             <div className="max-w-4xl mx-auto">
@@ -100,19 +146,19 @@ export default function ReadingDetail() {
                         {reading.content}
                     </div>
 
-                    {/* Area Call to Action Kuis (Dinamis Berdasarkan Status) */}
+                    {/* Area Call to Action */}
                     <div className="mt-16 p-8 bg-indigo-950/40 border border-indigo-500/30 rounded-2xl text-center shadow-inner relative z-10">
                         {completion.completed ? (
-                            // TAMPILAN JIKA SUDAH MENGERJAKAN
+                            // TAMPILAN JIKA SUDAH MENGERJAKAN KUIS (SEKARANG ADAPTIF!)
                             <div className="space-y-4 animate-in fade-in zoom-in duration-300">
-                                <div className="inline-flex items-center gap-2 px-5 py-2 bg-green-500/10 text-green-400 rounded-full font-bold border border-green-500/20 shadow-lg">
+                                <div className={`inline-flex items-center gap-2 px-5 py-2 ${scoreBg} ${scoreColor} rounded-full font-bold border ${scoreBorder} shadow-lg`}>
                                     <CheckCircle2 size={20} /> Kuis Selesai Dikerjakan
                                 </div>
                                 <h3 className="text-3xl font-black text-white mt-4">
-                                    Skor Kamu: <span className="text-green-400 drop-shadow-md">{completion.score}</span>
+                                    Skor Kamu: <span className={`${scoreColor} drop-shadow-md`}>{completion.score}</span>
                                 </h3>
                                 <p className="text-indigo-200/60 text-sm max-w-md mx-auto mb-6">
-                                    Luar biasa! Kamu sudah berhasil menguji pemahamanmu untuk materi ini. Silakan lanjut bereksplorasi di library.
+                                    {scoreMessage}
                                 </p>
                                 <button
                                     disabled
@@ -122,21 +168,40 @@ export default function ReadingDetail() {
                                 </button>
                             </div>
                         ) : (
-                            // TAMPILAN JIKA BELUM MENGERJAKAN
-                            <div className="animate-in fade-in zoom-in duration-300">
+                            // TAMPILAN JIKA BELUM MENGERJAKAN KUIS (TERMASUK TOMBOL SELESAI MEMBACA)
+                            <div className="animate-in fade-in zoom-in duration-300 flex flex-col items-center">
                                 <h3 className="text-xl font-bold text-white mb-3 flex justify-center items-center gap-2">
                                     <BookOpen size={24} className="text-indigo-400" />
-                                    Siap Menguji Pemahamanmu?
+                                    Sudah Selesai Membaca?
                                 </h3>
-                                <p className="mb-8 text-indigo-200/70 max-w-lg mx-auto text-sm">
-                                    Pastikan kamu sudah menyerap inti dari teks di atas. Saat kuis dimulai, teks ini akan ditutup dan kamu tidak bisa kembali lagi.
+                                <p className="mb-6 text-indigo-200/70 max-w-lg mx-auto text-sm">
+                                    Tandai bacaan ini sebagai selesai untuk mencatat progresmu dan membuka kuis. Saat kuis dimulai, teks ini akan ditutup.
                                 </p>
-                                <button
-                                    onClick={handleStartQuiz}
-                                    className="bg-indigo-600 hover:bg-indigo-500 text-white px-10 py-4 rounded-xl font-black text-lg transition-transform transform hover:scale-105 shadow-[0_0_20px_rgba(79,70,229,0.4)] w-full md:w-auto inline-block"
-                                >
-                                    Mulai Kuis Sekarang
-                                </button>
+
+                                <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto justify-center">
+                                    {/* TOMBOL SELESAI MEMBACA (EVENT ACHIEVEMENT) */}
+                                    <button
+                                        onClick={handleCompleteReading}
+                                        disabled={hasRead || isCompleting}
+                                        className={`px-8 py-4 rounded-xl font-black text-lg transition-all duration-300 w-full sm:w-auto inline-flex items-center justify-center gap-2 ${
+                                            hasRead
+                                                ? 'bg-green-500/20 text-green-400 border border-green-500/30 cursor-not-allowed'
+                                                : 'bg-slate-700 hover:bg-slate-600 text-white border border-white/10'
+                                        }`}
+                                    >
+                                        {isCompleting ? 'Memproses...' : hasRead ? <><Check size={20}/> Telah Dibaca</> : 'Selesai Membaca'}
+                                    </button>
+
+                                    {/* TOMBOL MULAI KUIS (MUNCUL JIKA SUDAH TEKAN SELESAI MEMBACA) */}
+                                    {hasRead && (
+                                        <button
+                                            onClick={handleStartQuiz}
+                                            className="bg-indigo-600 hover:bg-indigo-500 text-white px-8 py-4 rounded-xl font-black text-lg transition-transform transform hover:scale-105 shadow-[0_0_20px_rgba(79,70,229,0.4)] w-full sm:w-auto inline-block animate-in zoom-in fade-in"
+                                        >
+                                            Mulai Kuis Sekarang
+                                        </button>
+                                    )}
+                                </div>
                             </div>
                         )}
                     </div>

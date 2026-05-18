@@ -100,20 +100,40 @@ export default function ReadingQuiz() {
 
     // TAMPILAN HASIL (SCORE)
     if (result) {
-        const isPassed = result.score >= 70;
+        // 1. Tentukan Tema Warna & Pesan Berdasarkan Skor
+        let bgGlow, iconColor, scoreColor, titleText;
+
+        if (result.score >= 80) {
+            bgGlow = 'bg-green-500';
+            iconColor = 'text-green-400';
+            scoreColor = 'text-green-400';
+            titleText = 'Luar Biasa! 🎉';
+        } else if (result.score >= 50) {
+            bgGlow = 'bg-amber-500';
+            iconColor = 'text-amber-400';
+            scoreColor = 'text-amber-400';
+            titleText = 'Bagus! Tingkatkan Lagi! 📈';
+        } else {
+            bgGlow = 'bg-red-500';
+            iconColor = 'text-red-400';
+            scoreColor = 'text-red-400';
+            titleText = 'Jangan Menyerah! 💪';
+        }
+
         return (
             <div className="min-h-screen bg-slate-950 flex flex-col justify-center items-center p-6 relative overflow-hidden">
                 {/* Latar Belakang Gamifikasi */}
-                <div className={`absolute inset-0 opacity-20 blur-3xl ${result.completed ? 'bg-green-500' : 'bg-red-500'}`}></div>
+                <div className={`absolute inset-0 opacity-20 blur-3xl ${bgGlow}`}></div>
 
                 <div className="bg-slate-900/80 backdrop-blur-xl p-10 md:p-14 rounded-[3rem] max-w-lg w-full text-center shadow-2xl border border-white/10 relative z-10">
-                    <Award size={80} className={`mx-auto mb-6 ${result.completed ? 'text-green-400' : 'text-amber-400'}`} />
+                    <Award size={80} className={`mx-auto mb-6 ${iconColor}`} />
+
                     <h2 className="text-3xl font-black text-white mb-2">
-                        {isPassed ? 'Luar Biasa! 🎉' : 'Jangan Menyerah! 💪'}
+                        {titleText}
                     </h2>
                     <p className="text-indigo-200/70 mb-8 font-medium">Skor Literasimu:</p>
 
-                    <div className={`text-8xl font-black mb-8 drop-shadow-lg ${result.completed ? 'text-green-400' : 'text-red-400'}`}>
+                    <div className={`text-8xl font-black mb-8 drop-shadow-lg ${scoreColor}`}>
                         {result.score}
                     </div>
 
