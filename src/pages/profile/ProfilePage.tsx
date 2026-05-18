@@ -8,7 +8,6 @@ import {
   Calendar,
   Zap,
   GraduationCap,
-  Sparkles,
   CheckCircle2,
   Pencil,
   Check,
@@ -84,7 +83,7 @@ const ProfilePage: React.FC = () => {
     return (
       <div className="yomu-shell yomu-grid-noise lg:flex">
         <Sidebar username={user?.username || 'Pelajar'} />
-        
+
         <div className="flex-1 p-4 sm:p-6 lg:p-8">
           {/* Header Skeleton */}
           <header className="yomu-glass mb-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl px-4 py-3 animate-pulse">
@@ -136,7 +135,7 @@ const ProfilePage: React.FC = () => {
     return (
       <div className="yomu-shell yomu-grid-noise lg:flex">
         <Sidebar username={user?.username || 'Pelajar'} />
-        
+
         <div className="flex-1 p-4 sm:p-6 lg:p-8 flex items-center justify-center">
           <div className="yomu-glass rounded-2xl p-6 sm:p-8 max-w-md w-full text-center space-y-6 border-red-500/10">
             <div className="w-16 h-16 bg-red-500/10 border border-red-500/20 text-red-400 rounded-full flex items-center justify-center mx-auto text-2xl font-bold">
@@ -169,16 +168,12 @@ const ProfilePage: React.FC = () => {
 
       {/* Main Profile Layout */}
       <div className="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto">
-        
+
         {/* Header */}
         <header className="yomu-glass mb-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl px-4 py-3">
           <div>
             <p className="text-xs uppercase tracking-wide text-indigo-100/70">User Profile</p>
             <h1 className="text-2xl font-bold text-white">Profil Pengguna</h1>
-          </div>
-          <div className="flex items-center gap-1.5 text-xs text-indigo-200/50 bg-white/5 border border-white/5 rounded-xl px-3 py-1.5 font-medium">
-            <Sparkles size={12} className="text-amber-400 animate-spin-slow" />
-            <span>Profil Yomu Resmi</span>
           </div>
         </header>
 
