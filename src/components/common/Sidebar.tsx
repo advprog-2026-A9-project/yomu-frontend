@@ -8,6 +8,7 @@ import {
   Settings,
   Shield,
   Trophy,
+  User,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -20,6 +21,7 @@ type MenuItem = {
 
 const menuItems: MenuItem[] = [
   { label: 'Dashboard', path: '/', icon: Gauge },
+  { label: 'Profile', path: '/profile', icon: User },
   { label: 'Bacaan', path: '/readings', icon: BookOpen },
   { label: 'Achievements', path: '/achievements', icon: Award },
   { label: 'Clan', path: '/clan', icon: Shield },

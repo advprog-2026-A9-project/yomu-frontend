@@ -17,6 +17,7 @@ import {
 import { TierBadge } from '../../components/common/UI';
 import Sidebar from '../../components/common/Sidebar';
 import { ClanJoinRequestResponse } from '../../services/socialAPI';
+import { useNavigate } from 'react-router-dom';
 
 // Types based on Backend DTOs
 export interface ClanMember {
@@ -444,9 +445,21 @@ const MemberRow: React.FC<{
   onKick?: (memberId: string) => void
 }> = ({ member, isMe, clanLeaderId, isClanLeader, onKick }) => {
   const isMemberLeader = member.userId === clanLeaderId;
+  const navigate = useNavigate();
+
+  const handleRowClick = (e: React.MouseEvent) => {
+    // Prevent navigation if clicking on a button (like the kick button)
+    if ((e.target as HTMLElement).closest('button')) {
+      return;
+    }
+    navigate(`/profile/${member.userId}`);
+  };
 
   return (
-    <div className={`flex items-center justify-between p-4 transition-colors hover:bg-white/[0.02] ${isMemberLeader ? 'bg-indigo-500/[0.03]' : ''} ${isMe ? 'ring-1 ring-inset ring-indigo-500/20' : ''}`}>
+    <div
+      onClick={handleRowClick}
+      className={`flex items-center justify-between p-4 transition-colors hover:bg-white/[0.02] cursor-pointer ${isMemberLeader ? 'bg-indigo-500/[0.03]' : ''} ${isMe ? 'ring-1 ring-inset ring-indigo-500/20' : ''}`}
+    >
       <div className="flex items-center gap-4">
         <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold text-sm ${isMemberLeader ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' : 'bg-white/5 text-indigo-100 border border-white/10'}`}>
           {member.username.substring(0, 2).toUpperCase()}
