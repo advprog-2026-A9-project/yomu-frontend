@@ -249,38 +249,7 @@ export default function AchievementsPage() {
   );
 }
 
-/* ── Dynamic Achievement Tier Mapping & Styling ── */
-
-function getAchievementTier(threshold: number, type: string, name: string) {
-  const t = type ? type.toLowerCase() : '';
-  const n = name ? name.toLowerCase() : '';
-
-  if (t === 'readings_completed') {
-    if (threshold >= 300) return 'GODLIKE';
-    if (threshold >= 175) return 'MYTHIC';
-    if (threshold >= 100) return 'DIAMOND';
-    if (threshold >= 35) return 'GOLD';
-    if (threshold >= 10) return 'SILVER';
-    return 'BRONZE';
-  }
-  if (t === 'quizzes_passed') {
-    if (threshold >= 300) return 'GODLIKE';
-    if (threshold >= 175) return 'MYTHIC';
-    if (threshold >= 100) return 'DIAMOND';
-    if (threshold >= 40) return 'GOLD';
-    if (threshold >= 15) return 'SILVER';
-    return 'BRONZE';
-  }
-  if (t === 'accuracy_above') {
-    if (n.includes('eternal') || n.includes('ascended') || n.includes('godly')) return 'GODLIKE';
-    if (n.includes('impeccable') || n.includes('legend') || n.includes('centurion')) return 'MYTHIC';
-    if (threshold >= 98 || n.includes('divine')) return 'DIAMOND';
-    if (threshold >= 90) return 'GOLD';
-    if (threshold >= 80) return 'SILVER';
-    return 'BRONZE';
-  }
-  return 'BRONZE';
-}
+// Dynamic Tier styling is handled purely by the TIER_STYLES map based on the backend's explicit tier string.
 
 const TIER_STYLES: Record<
   string,
@@ -337,10 +306,10 @@ function AchievementCard({
   achievement: AchievementProgress; isShowcased: boolean; showcaseFull: boolean;
   onToggleShowcase: () => void; saving: boolean; delay: number;
 }) {
-  const { unlocked, achievementName, milestone, milestoneType, progressValue, milestoneThreshold } = achievement;
+  const { unlocked, achievementName, milestone, milestoneType, progressValue, milestoneThreshold, tier } = achievement;
   const pct = milestoneThreshold > 0 ? Math.min(100, (progressValue / milestoneThreshold) * 100) : 0;
 
-  const tierKey = getAchievementTier(milestoneThreshold, milestoneType, achievementName);
+  const tierKey = tier || 'BRONZE';
   const styles = TIER_STYLES[tierKey] || TIER_STYLES.BRONZE;
 
   return (
