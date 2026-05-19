@@ -19,6 +19,7 @@ const defaultForm: AchievementAdminPayload = {
   milestone: '',
   milestoneType: achievementTypes[0].value,
   milestoneThreshold: 1,
+  accuracyThreshold: undefined,
   tier: '',
 };
 
@@ -100,6 +101,7 @@ export default function AdminAchievementsPage() {
       milestone: row.milestone,
       milestoneType: row.milestoneType,
       milestoneThreshold: row.milestoneThreshold,
+      accuracyThreshold: row.accuracyThreshold ?? undefined,
       tier: row.tier ?? '',
     });
     setIsModalOpen(true);
@@ -277,7 +279,11 @@ export default function AdminAchievementsPage() {
                         )}
                       </div>
                     </td>
-                    <td className="px-6 py-5 text-center font-mono text-white">{achievement.milestoneThreshold}</td>
+                    <td className="px-6 py-5 text-center font-mono text-white">
+                      {achievement.milestoneType === 'accuracy_above' && achievement.accuracyThreshold 
+                        ? `${achievement.accuracyThreshold}% (${achievement.milestoneThreshold}x)` 
+                        : achievement.milestoneThreshold}
+                    </td>
                     <td className="px-6 py-5 text-center">
                       <span className="font-bold text-emerald-400">{achievement.earnedCount}</span>
                     </td>
@@ -339,7 +345,9 @@ export default function AdminAchievementsPage() {
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-semibold text-indigo-100/70">Milestone Threshold</label>
+              <label className="text-sm font-semibold text-indigo-100/70">
+                {form.milestoneType === 'accuracy_above' ? 'Required Count (Times)' : 'Milestone Threshold'}
+              </label>
               <input
                 type="number"
                 min={1}
@@ -350,6 +358,22 @@ export default function AdminAchievementsPage() {
               />
             </div>
           </div>
+
+          {form.milestoneType === 'accuracy_above' && (
+            <div className="space-y-2">
+              <label className="text-sm font-semibold text-indigo-100/70">Accuracy Threshold (%)</label>
+              <input
+                type="number"
+                min={1}
+                max={100}
+                value={form.accuracyThreshold ?? ''}
+                onChange={(e) => setForm((prev) => ({ ...prev, accuracyThreshold: e.target.value ? Number(e.target.value) : undefined }))}
+                className="w-full rounded-2xl border border-white/15 bg-white/5 px-4 py-3 text-white focus:border-indigo-400/50 focus:outline-none transition"
+                placeholder="e.g. 100"
+                required
+              />
+            </div>
+          )}
 
           <div className="space-y-2">
             <label className="text-sm font-semibold text-indigo-100/70">Description / Milestone</label>

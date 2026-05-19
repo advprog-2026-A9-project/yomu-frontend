@@ -47,7 +47,7 @@ export default function DashboardHome({
 
   useEffect(() => {
     const fetchData = async () => {
-      if (!user?.userId) return;
+      if (!user?.username) return;
 
       try {
         setClanLoading(true);
@@ -55,7 +55,7 @@ export default function DashboardHome({
 
         const [clanData, missionData] = await Promise.all([
           getMyClan(),
-          getTodayMissions(user.userId),
+          getTodayMissions(user.username),
         ]);
 
         setMyClan(clanData);
@@ -207,8 +207,13 @@ export default function DashboardHome({
                     key={mission.dailyMissionId}
                     title={mission.dailyMissionName}
                     description={mission.milestone}
-                    reward={mission.rewardDescription}
-                    progress={mission.targetCount > 0 ? Math.min(100, Math.round((mission.progressValue / mission.targetCount) * 100)) : 0}
+                    reward={`${mission.rewardScore} Score`}
+                    progress={(() => {
+                      const target = mission.missionType === 'achieve_accuracy'
+                        ? (mission.accuracyThreshold ?? 0)
+                        : (mission.targetCount ?? 0);
+                      return target > 0 ? Math.min(100, Math.round((mission.progressValue / target) * 100)) : 0;
+                    })()}
                   />
                 ))
               )}

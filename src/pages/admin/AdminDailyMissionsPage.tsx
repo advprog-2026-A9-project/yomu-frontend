@@ -21,7 +21,9 @@ const defaultForm: DailyMissionAdminPayload = {
   milestone: '',
   missionType: missionTypes[0].value,
   targetCount: 1,
-  rewardDescription: '',
+  accuracyThreshold: 80,
+  requiredCount: 1,
+  rewardScore: 50,
   activeFrom: null,
   activeUntil: null,
 };
@@ -169,7 +171,9 @@ export default function AdminDailyMissionsPage() {
       milestone: row.milestone,
       missionType: row.missionType,
       targetCount: row.targetCount,
-      rewardDescription: row.rewardDescription,
+      accuracyThreshold: row.accuracyThreshold,
+      requiredCount: row.requiredCount,
+      rewardScore: row.rewardScore,
       activeFrom: row.activeFrom,
       activeUntil: row.activeUntil,
     });
@@ -263,8 +267,13 @@ export default function AdminDailyMissionsPage() {
                   <p className="text-xs font-bold uppercase tracking-wider text-indigo-400">{m.missionType}</p>
                   <p className="mt-1 font-bold text-white line-clamp-1">{m.name}</p>
                   <div className="mt-3 flex items-center justify-between text-[10px] text-indigo-100/50">
-                    <span>Target: {m.targetCount}</span>
-                    <span className="rounded bg-indigo-500/20 px-1.5 py-0.5 text-indigo-300">{m.rewardDescription}</span>
+                    <span>
+                      Target:{' '}
+                      {m.missionType === 'achieve_accuracy'
+                        ? `>= ${m.accuracyThreshold}% (${m.requiredCount}x)`
+                        : `${m.targetCount}`}
+                    </span>
+                    <span className="rounded bg-indigo-500/20 px-1.5 py-0.5 text-indigo-300">{m.rewardScore} Score</span>
                   </div>
                 </div>
               ))
@@ -444,7 +453,11 @@ export default function AdminDailyMissionsPage() {
                         {mission.missionType}
                       </span>
                     </td>
-                    <td className="px-6 py-5 text-center font-mono text-white">{mission.targetCount}</td>
+                    <td className="px-6 py-5 text-center text-xs font-mono text-white">
+                      {mission.missionType === 'achieve_accuracy'
+                        ? `>= ${mission.accuracyThreshold}% (${mission.requiredCount}x)`
+                        : `${mission.targetCount}`}
+                    </td>
                     <td className="px-6 py-5">
                       <span
                         className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider ${mission.active
@@ -552,30 +565,72 @@ export default function AdminDailyMissionsPage() {
             />
           </div>
 
-          <div className="grid gap-6 md:grid-cols-2">
-            <div className="space-y-2">
-              <label className="text-sm font-semibold text-indigo-100/70">Target Count</label>
-              <input
-                type="number"
-                min={1}
-                value={form.targetCount}
-                onChange={(e) => setForm((prev) => ({ ...prev, targetCount: Number(e.target.value) }))}
-                className="w-full rounded-2xl border border-white/15 bg-white/5 px-4 py-3 text-white focus:border-indigo-400/50 focus:outline-none transition"
-                required
-              />
-            </div>
+          {form.missionType === 'achieve_accuracy' ? (
+            <div className="grid gap-6 md:grid-cols-3">
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-indigo-100/70">Accuracy Threshold (%)</label>
+                <input
+                  type="number"
+                  min={1}
+                  max={100}
+                  value={form.accuracyThreshold ?? 80}
+                  onChange={(e) => setForm((prev) => ({ ...prev, accuracyThreshold: Number(e.target.value) }))}
+                  className="w-full rounded-2xl border border-white/15 bg-white/5 px-4 py-3 text-white focus:border-indigo-400/50 focus:outline-none transition"
+                  required
+                />
+              </div>
 
-            <div className="space-y-2">
-              <label className="text-sm font-semibold text-indigo-100/70">Reward Description</label>
-              <input
-                value={form.rewardDescription}
-                onChange={(e) => setForm((prev) => ({ ...prev, rewardDescription: e.target.value }))}
-                className="w-full rounded-2xl border border-white/15 bg-white/5 px-4 py-3 text-white focus:border-indigo-400/50 focus:outline-none transition"
-                placeholder="e.g. 50 XP"
-                required
-              />
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-indigo-100/70">Required Count (times)</label>
+                <input
+                  type="number"
+                  min={1}
+                  value={form.requiredCount ?? 1}
+                  onChange={(e) => setForm((prev) => ({ ...prev, requiredCount: Number(e.target.value) }))}
+                  className="w-full rounded-2xl border border-white/15 bg-white/5 px-4 py-3 text-white focus:border-indigo-400/50 focus:outline-none transition"
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-indigo-100/70">Reward Score</label>
+                <input
+                  type="number"
+                  min={1}
+                  value={form.rewardScore}
+                  onChange={(e) => setForm((prev) => ({ ...prev, rewardScore: Number(e.target.value) }))}
+                  className="w-full rounded-2xl border border-white/15 bg-white/5 px-4 py-3 text-white focus:border-indigo-400/50 focus:outline-none transition"
+                  required
+                />
+              </div>
             </div>
-          </div>
+          ) : (
+            <div className="grid gap-6 md:grid-cols-2">
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-indigo-100/70">Target Count</label>
+                <input
+                  type="number"
+                  min={1}
+                  value={form.targetCount ?? 1}
+                  onChange={(e) => setForm((prev) => ({ ...prev, targetCount: Number(e.target.value) }))}
+                  className="w-full rounded-2xl border border-white/15 bg-white/5 px-4 py-3 text-white focus:border-indigo-400/50 focus:outline-none transition"
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-indigo-100/70">Reward Score</label>
+                <input
+                  type="number"
+                  min={1}
+                  value={form.rewardScore}
+                  onChange={(e) => setForm((prev) => ({ ...prev, rewardScore: Number(e.target.value) }))}
+                  className="w-full rounded-2xl border border-white/15 bg-white/5 px-4 py-3 text-white focus:border-indigo-400/50 focus:outline-none transition"
+                  required
+                />
+              </div>
+            </div>
+          )}
 
           <div className="grid gap-6 md:grid-cols-2">
             <div className="space-y-2">

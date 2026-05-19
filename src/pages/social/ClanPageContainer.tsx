@@ -46,7 +46,7 @@ const ClanPageContainer: React.FC = () => {
           id: detail.id,
           name: detail.name,
           description: detail.description,
-          leaderUserId: detail.leaderUserId,
+          leaderUsername: detail.leaderUsername,
           tier: detail.tier.toUpperCase() as any,
           rank: detail.rank,
           score: detail.score,
@@ -62,7 +62,7 @@ const ClanPageContainer: React.FC = () => {
 
         setClan(mappedClan);
 
-        if (detail.leaderUserId === user.userId) {
+        if (detail.leaderUsername === user.username) {
           const fetchedRequests = await getClanRequests(detail.id, 0, 50); // Fetch first 50 requests
           setRequests(fetchedRequests.content);
           setTotalRequests(fetchedRequests.totalElements);
@@ -160,11 +160,11 @@ const ClanPageContainer: React.FC = () => {
     );
   }
 
-  const handleKickMember = async (memberId: string) => {
+  const handleKickMember = async (memberUsername: string) => {
     if (!clan) return;
 
     try {
-      await kickMember(clan.id, memberId);
+      await kickMember(clan.id, memberUsername);
       fetchClanData();
     } catch (err) {
       alert(err instanceof Error ? err.message : "Failed to kick member");
@@ -205,7 +205,7 @@ const ClanPageContainer: React.FC = () => {
   return (
     <ClanPage
       clan={clan}
-      currentUserId={user?.userId || ''}
+      currentUsername={user?.username || ''}
       username={user?.username || 'Pelajar'}
       onCreateClan={handleCreateClan}
       onDiscoverClans={handleDiscoverClans}

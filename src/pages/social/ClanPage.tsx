@@ -21,7 +21,6 @@ import { useNavigate } from 'react-router-dom';
 
 // Types based on Backend DTOs
 export interface ClanMember {
-  userId: string;
   username: string;
   role: 'KETUA' | 'ANGGOTA' | 'LEADER' | 'MEMBER';
   contribution: number;
@@ -41,7 +40,7 @@ export interface Clan {
   id: string;
   name: string;
   description: string;
-  leaderUserId: string;
+  leaderUsername: string;
   tier: 'BRONZE' | 'SILVER' | 'GOLD' | 'DIAMOND';
   rank: number;
   score: number;
@@ -54,14 +53,14 @@ export interface Clan {
 
 interface ClanPageProps {
   clan: Clan | null;
-  currentUserId: string;
+  currentUsername: string;
   username: string;
   onCreateClan: () => void;
   onDiscoverClans: () => void;
   onEditClan?: () => void;
   onDeleteClan?: () => void;
   onLeaveClan?: () => void;
-  onKickMember?: (memberId: string) => void;
+  onKickMember?: (memberUsername: string) => void;
   requests?: ClanJoinRequestResponse[];
   totalRequests?: number;
   onAcceptRequest?: (id: number) => void;
@@ -71,7 +70,7 @@ interface ClanPageProps {
 
 const ClanPage: React.FC<ClanPageProps> = ({
   clan,
-  currentUserId,
+  currentUsername,
   username,
   onCreateClan,
   onDiscoverClans,
@@ -95,7 +94,7 @@ const ClanPage: React.FC<ClanPageProps> = ({
 
   const confirmKick = () => {
     if (memberToKick && onKickMember) {
-      onKickMember(memberToKick.userId);
+      onKickMember(memberToKick.username);
       setMemberToKick(null);
     }
   };
@@ -144,7 +143,7 @@ const ClanPage: React.FC<ClanPageProps> = ({
   }
 
   // State B: User has a clan
-  const isLeader = currentUserId === clan.leaderUserId;
+  const isLeader = currentUsername === clan.leaderUsername;
 
   return (
     <div className="yomu-shell yomu-grid-noise lg:flex min-h-screen">
@@ -246,26 +245,36 @@ const ClanPage: React.FC<ClanPageProps> = ({
                 {clan.activeBuffs.map((buff, idx) => (
                   <div
                     key={`buff-${idx}`}
-                    className="flex-shrink-0 flex items-center gap-3 p-3 rounded-xl border transition-all duration-300 min-w-[160px] bg-emerald-500/5 border-emerald-500/20 text-emerald-100 hover:-translate-y-0.5 hover:shadow-lg hover:border-emerald-500/40 hover:bg-emerald-500/10 hover:shadow-emerald-500/10 animate-fade-rise"
+                    className="flex-shrink-0 flex items-center gap-3 p-3 rounded-xl border transition-all duration-300 min-w-[180px] bg-emerald-500/5 border-emerald-500/20 text-emerald-100 hover:-translate-y-0.5 hover:shadow-lg hover:border-emerald-500/40 hover:bg-emerald-500/10 hover:shadow-emerald-500/10 animate-fade-rise"
                     style={{ animationDelay: `${idx * 0.1}s` }}
                   >
                     <div className="text-emerald-400 bg-emerald-500/10 p-1.5 rounded-lg"><Shield size={16} /></div>
                     <div className="flex flex-col">
                       <span className="text-xs font-bold">{buff.name}</span>
-                      <span className="text-[10px] text-indigo-100/50 font-medium">{buff.duration}</span>
+                      <div className="flex items-center gap-1.5 mt-0.5">
+                        <span className="text-[10px] bg-emerald-500/20 text-emerald-300 px-1 py-0.2 rounded font-mono font-bold">
+                          {buff.multiplier}
+                        </span>
+                        <span className="text-[10px] text-indigo-100/50 font-medium">{buff.duration}</span>
+                      </div>
                     </div>
                   </div>
                 ))}
                 {clan.debuffs.map((debuff, idx) => (
                   <div
                     key={`debuff-${idx}`}
-                    className="flex-shrink-0 flex items-center gap-3 p-3 rounded-xl border transition-all duration-300 min-w-[160px] bg-red-500/5 border-red-500/20 text-red-100 hover:-translate-y-0.5 hover:shadow-lg hover:border-red-500/40 hover:bg-red-500/10 hover:shadow-red-500/10 animate-fade-rise"
+                    className="flex-shrink-0 flex items-center gap-3 p-3 rounded-xl border transition-all duration-300 min-w-[180px] bg-red-500/5 border-red-500/20 text-red-100 hover:-translate-y-0.5 hover:shadow-lg hover:border-red-500/40 hover:bg-red-500/10 hover:shadow-red-500/10 animate-fade-rise"
                     style={{ animationDelay: `${(clan.activeBuffs.length + idx) * 0.1}s` }}
                   >
                     <div className="text-red-400 bg-red-500/10 p-1.5 rounded-lg"><AlertCircle size={16} /></div>
                     <div className="flex flex-col">
                       <span className="text-xs font-bold">{debuff.name}</span>
-                      <span className="text-[10px] text-indigo-100/50 font-medium">{debuff.duration}</span>
+                      <div className="flex items-center gap-1.5 mt-0.5">
+                        <span className="text-[10px] bg-red-500/20 text-red-300 px-1 py-0.2 rounded font-mono font-bold">
+                          {debuff.multiplier}
+                        </span>
+                        <span className="text-[10px] text-indigo-100/50 font-medium">{debuff.duration}</span>
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -351,10 +360,10 @@ const ClanPage: React.FC<ClanPageProps> = ({
             <div className="divide-y divide-white/5">
               {clan.members.slice(0, 10).map((member) => (
                 <MemberRow
-                  key={member.userId}
+                  key={member.username}
                   member={member}
-                  isMe={member.userId === currentUserId}
-                  clanLeaderId={clan.leaderUserId}
+                  isMe={member.username === currentUsername}
+                  clanLeaderUsername={clan.leaderUsername}
                   isClanLeader={isLeader}
                   onKick={() => setMemberToKick(member)}
                 />
@@ -367,10 +376,10 @@ const ClanPage: React.FC<ClanPageProps> = ({
                 <div className="max-h-[400px] overflow-y-auto divide-y divide-white/5 scrollbar-thin">
                   {clan.members.slice(10).map((member) => (
                     <MemberRow
-                      key={member.userId}
+                      key={member.username}
                       member={member}
-                      isMe={member.userId === currentUserId}
-                      clanLeaderId={clan.leaderUserId}
+                      isMe={member.username === currentUsername}
+                      clanLeaderUsername={clan.leaderUsername}
                       isClanLeader={isLeader}
                       onKick={() => setMemberToKick(member)}
                     />
@@ -440,11 +449,11 @@ const ClanPage: React.FC<ClanPageProps> = ({
 const MemberRow: React.FC<{
   member: ClanMember;
   isMe: boolean;
-  clanLeaderId: string;
+  clanLeaderUsername: string;
   isClanLeader: boolean;
-  onKick?: (memberId: string) => void
-}> = ({ member, isMe, clanLeaderId, isClanLeader, onKick }) => {
-  const isMemberLeader = member.userId === clanLeaderId;
+  onKick?: (memberUsername: string) => void
+}> = ({ member, isMe, clanLeaderUsername, isClanLeader, onKick }) => {
+  const isMemberLeader = member.username === clanLeaderUsername;
   const navigate = useNavigate();
 
   const handleRowClick = (e: React.MouseEvent) => {
@@ -452,7 +461,7 @@ const MemberRow: React.FC<{
     if ((e.target as HTMLElement).closest('button')) {
       return;
     }
-    navigate(`/profile/${member.userId}`);
+    navigate(`/profile/${member.username}`);
   };
 
   return (
@@ -484,7 +493,7 @@ const MemberRow: React.FC<{
 
       {isClanLeader && !isMe && !isMemberLeader && (
         <button
-          onClick={() => onKick?.(member.userId)}
+          onClick={() => onKick?.(member.username)}
           className="p-2 hover:bg-red-500/10 rounded-lg text-red-400/50 hover:text-red-400 transition-all group"
           title={`Kick ${member.username}`}
         >

@@ -14,7 +14,7 @@ type FilterMode = 'all' | 'unlocked' | 'locked';
 
 export default function AchievementsPage() {
   const { user } = useAuth();
-  const userId = user?.userId ?? '';
+  const username = user?.username ?? '';
 
   const [achievements, setAchievements] = useState<AchievementProgress[]>([]);
   const [loading, setLoading] = useState(true);
@@ -26,13 +26,13 @@ export default function AchievementsPage() {
   const [toast, setToast] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!userId) return;
+    if (!username) return;
     let cancelled = false;
     (async () => {
       try {
         const [achData, showcaseData] = await Promise.all([
-          getMyAchievements(userId),
-          getShowcase(userId).catch(() => [] as string[]),
+          getMyAchievements(username),
+          getShowcase(username).catch(() => [] as string[]),
         ]);
         if (!cancelled) {
           setAchievements(achData);
@@ -46,7 +46,7 @@ export default function AchievementsPage() {
     return () => {
       cancelled = true;
     };
-  }, [userId]);
+  }, [username]);
 
   const unlockedCount = achievements.filter((a) => a.unlocked).length;
   const lockedCount = achievements.filter((a) => !a.unlocked).length;
@@ -92,7 +92,7 @@ export default function AchievementsPage() {
     setShowcaseIds(next);
     setSaving(true);
     try {
-      await updateShowcase(userId, next);
+      await updateShowcase(username, next);
       showToast(isSelected ? 'Dihapus dari showcase' : 'Ditambahkan ke showcase ✨');
     } catch {
       setShowcaseIds(showcaseIds);
@@ -100,7 +100,7 @@ export default function AchievementsPage() {
     } finally {
       setSaving(false);
     }
-  }, [showcaseIds, userId]);
+  }, [showcaseIds, username]);
 
   function showToast(msg: string) {
     setToast(msg);
