@@ -73,7 +73,7 @@ export interface ClanResponse {
     id: string;
     name: string;
     description: string;
-    leaderUserId: string;
+    leaderUsername: string;
     tier: string;
     score: number;
     effectiveScore?: number;
@@ -86,16 +86,15 @@ export interface MyClanResponse {
     id: string;
     name: string;
     description: string;
-    leaderUserId: string;
+    leaderUsername: string;
     role: string;
     tier: string;
     score: number;
     rank: number;
-    members: { userId: string; username: string; role: string }[];
+    members: { username: string; role: string }[];
 }
 
 export interface ClanMember {
-    userId: string;
     username: string;
     role: string;
     contribution: number;
@@ -115,7 +114,7 @@ export interface ClanDetailResponse {
     id: string;
     name: string;
     description: string;
-    leaderUserId: string;
+    leaderUsername: string;
     tier: string;
     rank: number;
     score: number;
@@ -130,7 +129,6 @@ export interface ClanDetailResponse {
 export interface ClanJoinRequestResponse {
     id: number;
     clanId: string;
-    userId: string;
     username: string;
     status: string;
     createdAt: string;
