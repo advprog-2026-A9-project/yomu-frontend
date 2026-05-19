@@ -1,5 +1,5 @@
-import { NavLink, Outlet, useNavigate } from 'react-router-dom';
-import { CalendarDays, LayoutDashboard, LogOut, Shield, Trophy, Library } from 'lucide-react';
+import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { CalendarDays, LayoutDashboard, LogOut, Shield, Trophy, Library, MessageSquare } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { GlassCard } from '../../components/common/UI';
 
@@ -7,13 +7,14 @@ const navItems = [
   { to: '/admin/league', label: 'Liga', icon: Trophy },
   { to: '/admin/achievements', label: 'Achievement', icon: LayoutDashboard },
   { to: '/admin/daily-missions', label: 'Daily Mission', icon: CalendarDays },
-  // Tambahkan menu Reading Management di sini
   { to: '/admin/readings', label: 'Reading Mgmt', icon: Library },
+  { to: '/admin/discussions', label: 'Discussion Mgmt', icon: MessageSquare },
 ];
 
 export default function AdminDashboardPage() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const handleLogout = () => {
     logout();
@@ -50,7 +51,9 @@ export default function AdminDashboardPage() {
                         to={to}
                         className={({ isActive }) =>
                             `flex items-center gap-3 rounded-xl border px-3 py-3 text-sm font-semibold transition ${
-                                isActive || (to === '/admin/readings' && location.pathname.includes('/admin/readings'))
+                                isActive || 
+                                (to === '/admin/readings' && location.pathname.includes('/admin/readings')) || 
+                                (to === '/admin/discussions' && location.pathname.includes('/admin/discussions'))
                                     ? 'border-indigo-300/50 bg-indigo-500/20 text-indigo-50'
                                     : 'border-white/10 bg-white/5 text-indigo-100/75 hover:border-white/20 hover:bg-white/10'
                             }`

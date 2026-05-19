@@ -15,6 +15,21 @@ export interface CommentData {
 }
 
 export const discussionService = {
+    getAllCommentsAdmin: async (): Promise<CommentData[]> => {
+        try {
+            const response = await fetch(`${API_URL}/all`, {
+                headers: {
+                    ...getAuthHeader()
+                } as HeadersInit,
+            });
+            if (!response.ok) throw new Error("Gagal mengambil semua komentar (Dilarang)");
+            return await response.json();
+        } catch (error) {
+            console.error("Error fetching all comments:", error);
+            return [];
+        }
+    },
+
     getCommentsByReading: async (readingId: string): Promise<CommentData[]> => {
         try {
             const response = await fetch(`${API_URL}/reading/${readingId}`, {
@@ -80,7 +95,6 @@ export const discussionService = {
             throw error;
         }
     },
-
 
     addReaction: async (commentId: string, userId: string, type: 'UPVOTE' | 'DOWNVOTE' | 'EMOJI', emojiCode?: string): Promise<void> => {
         try {
