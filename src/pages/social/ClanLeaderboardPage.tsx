@@ -6,12 +6,64 @@ import {
   Medal,
   ChevronUp,
   ChevronDown,
-  AlertCircle
+  AlertCircle,
+  Info,
+  Star,
+  Sparkles,
+  Zap,
+  TrendingUp
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { getLeaderboard, LeaderboardByTier } from '../../services/socialAPI';
 import Sidebar from '../../components/common/Sidebar';
 import { GlassCard } from '../../components/common/UI';
+
+const TIER_INFO: Record<string, {
+  label: string;
+  color: string;
+  bgColor: string;
+  borderColor: string;
+  icon: React.ReactNode;
+  scoringTitle: string;
+  scoringDesc: string;
+}> = {
+  DIAMOND: {
+    label: 'Diamond',
+    color: 'text-cyan-300',
+    bgColor: 'bg-cyan-500/10',
+    borderColor: 'border-cyan-500/20',
+    icon: <Sparkles size={16} className="text-cyan-300" />,
+    scoringTitle: 'Weighted Average',
+    scoringDesc: 'Score is calculated using a weighted average between consistency (60%) and peak performance (40%). Rewarding clans where all members contribute steadily.',
+  },
+  GOLD: {
+    label: 'Gold',
+    color: 'text-yellow-400',
+    bgColor: 'bg-yellow-500/10',
+    borderColor: 'border-yellow-500/20',
+    icon: <Star size={16} className="text-yellow-400" />,
+    scoringTitle: 'Diminishing Returns',
+    scoringDesc: 'Higher-scoring clans receive progressively smaller score gains (logarithmic scaling). This prevents runaway leaders and keeps competition tight.',
+  },
+  SILVER: {
+    label: 'Silver',
+    color: 'text-slate-300',
+    bgColor: 'bg-slate-400/10',
+    borderColor: 'border-slate-400/20',
+    icon: <TrendingUp size={16} className="text-slate-300" />,
+    scoringTitle: 'Contribution Bonus',
+    scoringDesc: 'Base points are amplified by +5% per quiz contribution completed. More active participation from members means a bigger score multiplier for your clan!',
+  },
+  BRONZE: {
+    label: 'Bronze',
+    color: 'text-amber-600',
+    bgColor: 'bg-amber-700/10',
+    borderColor: 'border-amber-700/20',
+    icon: <Zap size={16} className="text-amber-600" />,
+    scoringTitle: 'Direct Scoring',
+    scoringDesc: 'Points earned from quizzes and missions are added directly to your clan score. Simple and straightforward — every point counts!',
+  },
+};
 
 const ClanLeaderboardPage: React.FC = () => {
   const { user, loading: authLoading } = useAuth();
@@ -19,6 +71,7 @@ const ClanLeaderboardPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeTier, setActiveTier] = useState<string>('BRONZE');
+  const [showScoringInfo, setShowScoringInfo] = useState(false);
   const hasAutoSelectedTier = useRef(false);
 
   const fetchData = useCallback(async () => {
@@ -65,6 +118,8 @@ const ClanLeaderboardPage: React.FC = () => {
 
   const tiers = ['DIAMOND', 'GOLD', 'SILVER', 'BRONZE'];
 
+  const tierMeta = TIER_INFO[activeTier] || TIER_INFO.BRONZE;
+
   const getRankIcon = (rank: number) => {
     if (rank === 1) return <Medal className="text-yellow-400" size={24} />;
     if (rank === 2) return <Medal className="text-slate-300" size={24} />;
@@ -88,8 +143,14 @@ const ClanLeaderboardPage: React.FC = () => {
           <Shield size={20} className={entry.rank === 1 ? 'text-yellow-400' : 'text-indigo-400'} />
         </div>
         <div>
-          <h3 className="font-bold text-white group-hover:text-indigo-300 transition-colors">
-            {entry.clanName} {isUserClan && <span className="text-[10px] bg-indigo-500 px-1.5 py-0.5 rounded ml-2">YOU</span>}
+          <h3 className="font-bold text-white group-hover:text-indigo-300 transition-colors flex items-center gap-2">
+            {entry.clanName}
+            {isUserClan && <span className="text-[10px] bg-indigo-500 px-1.5 py-0.5 rounded">YOU</span>}
+            {entry.rank === 1 && (
+              <span className="text-[10px] bg-gradient-to-r from-yellow-500 to-amber-500 text-black font-black px-1.5 py-0.5 rounded flex items-center gap-0.5">
+                <Trophy size={8} /> #1
+              </span>
+            )}
           </h3>
           <div className="flex items-center gap-2 md:hidden mt-1">
             <span className="text-[10px] text-indigo-100/40 flex items-center gap-1">
@@ -135,16 +196,70 @@ const ClanLeaderboardPage: React.FC = () => {
               <button
                 key={tier}
                 onClick={() => setActiveTier(tier)}
-                className={`px-4 py-2 rounded-xl text-xs font-black transition-all ${activeTier === tier
+                className={`px-4 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 ${activeTier === tier
                   ? 'bg-indigo-500 text-white shadow-lg shadow-indigo-500/20'
                   : 'text-indigo-100/40 hover:text-indigo-100/60'
                   }`}
               >
+                {TIER_INFO[tier]?.icon}
                 {tier}
               </button>
             ))}
           </div>
         </header>
+
+        {/* Tier Scoring Explanation */}
+        <GlassCard className={`${tierMeta.borderColor} ${tierMeta.bgColor} animate-fade-rise`} style={{ animationDelay: '0.1s' }}>
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex items-start gap-3 flex-1">
+              <div className={`p-2 rounded-lg ${tierMeta.bgColor} mt-0.5`}>
+                {tierMeta.icon}
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center gap-2 mb-1">
+                  <h4 className={`font-bold ${tierMeta.color}`}>{tierMeta.label} Tier — {tierMeta.scoringTitle}</h4>
+                  <button
+                    onClick={() => setShowScoringInfo(!showScoringInfo)}
+                    className="text-indigo-100/30 hover:text-indigo-100/60 transition-colors"
+                  >
+                    <Info size={14} />
+                  </button>
+                </div>
+                {showScoringInfo && (
+                  <p className="text-xs text-indigo-100/50 leading-relaxed mt-1">
+                    {tierMeta.scoringDesc}
+                  </p>
+                )}
+                {!showScoringInfo && (
+                  <p className="text-[11px] text-indigo-100/30">
+                    Click <Info size={10} className="inline" /> to learn how scoring works in this tier
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+        </GlassCard>
+
+        {/* Champion Achievement Banner */}
+        <GlassCard className="border-yellow-500/20 bg-gradient-to-r from-yellow-500/5 via-amber-500/5 to-orange-500/5 animate-fade-rise" style={{ animationDelay: '0.15s' }}>
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-yellow-500/10 flex items-center justify-center flex-shrink-0">
+              <Trophy size={24} className="text-yellow-400" />
+            </div>
+            <div className="flex-1">
+              <h4 className="font-bold text-yellow-200 flex items-center gap-2">
+                <Sparkles size={14} className="text-yellow-400" />
+                Season Champion Achievement
+              </h4>
+              <p className="text-xs text-yellow-100/50 leading-relaxed mt-0.5">
+                The <span className="font-bold text-yellow-300">#1 clan</span> on the leaderboard at the end of the season earns the exclusive <span className="font-bold text-yellow-300">"Season Champion"</span> achievement for <span className="text-yellow-300 font-bold">all members</span>. Lead your clan to victory!
+              </p>
+            </div>
+            <div className="hidden md:flex items-center gap-1 text-[10px] font-black tracking-wider text-yellow-400/60 uppercase">
+              <Star size={12} /> Exclusive
+            </div>
+          </div>
+        </GlassCard>
 
         {loading ? (
           <div className="space-y-4">
