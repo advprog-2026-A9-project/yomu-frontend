@@ -76,7 +76,6 @@ const ProfilePage: React.FC = () => {
 
   // Profile editing states
   const [isEditingProfile, setIsEditingProfile] = useState(false);
-  const [tempUsername, setTempUsername] = useState('');
   const [tempDisplayName, setTempDisplayName] = useState('');
   const [tempOldPassword, setTempOldPassword] = useState('');
   const [tempNewPassword, setTempNewPassword] = useState('');
@@ -133,7 +132,6 @@ const ProfilePage: React.FC = () => {
           setSavingProfile(true);
           setProfileError(null);
           await updateMyProfile({
-              username: tempUsername !== profile?.username ? tempUsername : undefined,
               displayName: tempDisplayName !== profile?.displayName ? tempDisplayName : undefined,
               oldPassword: tempOldPassword || undefined,
               newPassword: tempNewPassword || undefined,
@@ -346,7 +344,6 @@ const ProfilePage: React.FC = () => {
                         </button>
                         <button
                           onClick={() => {
-                            setTempUsername(profile.username);
                             setTempDisplayName(profile.displayName);
                             setIsEditingProfile(true);
                             setProfileError(null);
@@ -390,15 +387,6 @@ const ProfilePage: React.FC = () => {
                   type="text"
                   value={tempDisplayName}
                   onChange={(e) => setTempDisplayName(e.target.value)}
-                  className="w-full p-3 text-sm text-indigo-100 bg-white/5 border border-white/10 rounded-xl focus:outline-none focus:border-indigo-500/50 transition-colors"
-                />
-              </div>
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-indigo-200/70">Username</label>
-                <input
-                  type="text"
-                  value={tempUsername}
-                  onChange={(e) => setTempUsername(e.target.value)}
                   className="w-full p-3 text-sm text-indigo-100 bg-white/5 border border-white/10 rounded-xl focus:outline-none focus:border-indigo-500/50 transition-colors"
                 />
               </div>
