@@ -330,7 +330,11 @@ function AchievementCard({
         </div>
         <div className="min-w-0 flex-1">
           <h4 className="text-[0.9375rem] font-bold leading-snug text-white">{achievementName}</h4>
-          <p className="text-xs text-indigo-100/50 font-mono tracking-wide">{milestoneType}</p>
+          <p className="text-xs text-indigo-100/50 font-mono tracking-wide">
+            {milestoneType === 'ranking_achieved' && achievement.targetTier
+              ? `ranking_achieved (${achievement.targetTier})`
+              : milestoneType}
+          </p>
         </div>
       </div>
 

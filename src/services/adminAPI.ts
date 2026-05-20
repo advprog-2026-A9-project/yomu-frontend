@@ -38,6 +38,7 @@ export interface AchievementAdminRecord {
     milestoneThreshold: number;
     accuracyThreshold?: number | null;
     tier?: string | null;
+    targetTier?: string | null;
     earnedCount: number;
     active: boolean;
 }
@@ -63,6 +64,7 @@ export interface AchievementAdminPayload {
     milestoneThreshold: number;
     accuracyThreshold?: number | null;
     tier?: string | null;
+    targetTier?: string | null;
 }
 
 export interface DailyMissionAdminPayload {

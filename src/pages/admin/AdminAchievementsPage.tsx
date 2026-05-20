@@ -21,6 +21,7 @@ const defaultForm: AchievementAdminPayload = {
   milestoneThreshold: 1,
   accuracyThreshold: undefined,
   tier: '',
+  targetTier: '',
 };
 
 const ITEMS_PER_PAGE = 8;
@@ -103,6 +104,7 @@ export default function AdminAchievementsPage() {
       milestoneThreshold: row.milestoneThreshold,
       accuracyThreshold: row.accuracyThreshold ?? undefined,
       tier: row.tier ?? '',
+      targetTier: row.targetTier ?? '',
     });
     setIsModalOpen(true);
   };
@@ -119,6 +121,10 @@ export default function AdminAchievementsPage() {
     try {
       setSaving(true);
       setError(null);
+
+      if (form.milestoneType === 'ranking_achieved' && !form.targetTier) {
+        throw new Error('Target Tier wajib dipilih untuk tipe Milestone "Ranking achieved"');
+      }
 
       if (editingId) {
         await updateAchievement(editingId, form);
@@ -277,11 +283,18 @@ export default function AdminAchievementsPage() {
                             {achievement.tier.toUpperCase()}
                           </span>
                         )}
+                        {achievement.targetTier && (
+                          <span className="rounded-full bg-rose-500/10 px-2.5 py-1 text-[11px] font-medium text-rose-200 border border-rose-500/20">
+                            Req: {achievement.targetTier.toUpperCase()}
+                          </span>
+                        )}
                       </div>
                     </td>
                     <td className="px-6 py-5 text-center font-mono text-white">
                       {achievement.milestoneType === 'accuracy_above' && achievement.accuracyThreshold 
                         ? `${achievement.accuracyThreshold}% (${achievement.milestoneThreshold}x)` 
+                        : achievement.milestoneType === 'ranking_achieved'
+                        ? `Rank ≤ ${achievement.milestoneThreshold}`
                         : achievement.milestoneThreshold}
                     </td>
                     <td className="px-6 py-5 text-center">
@@ -346,7 +359,11 @@ export default function AdminAchievementsPage() {
 
             <div className="space-y-2">
               <label className="text-sm font-semibold text-indigo-100/70">
-                {form.milestoneType === 'accuracy_above' ? 'Required Count (Times)' : 'Milestone Threshold'}
+                {form.milestoneType === 'accuracy_above' 
+                  ? 'Required Count (Times)' 
+                  : form.milestoneType === 'ranking_achieved'
+                  ? 'Rank Threshold (e.g. 3 for Top 3)'
+                  : 'Milestone Threshold'}
               </label>
               <input
                 type="number"
@@ -419,6 +436,26 @@ export default function AdminAchievementsPage() {
               </select>
             </div>
           </div>
+
+          {form.milestoneType === 'ranking_achieved' && (
+            <div className="space-y-2">
+              <label className="text-sm font-semibold text-indigo-100/70">Target Tier Requirement (Required)</label>
+              <select
+                value={form.targetTier ?? ''}
+                onChange={(e) => setForm((prev) => ({ ...prev, targetTier: e.target.value || '' }))}
+                className="w-full rounded-2xl border border-white/15 bg-white/5 px-4 py-3 text-white focus:border-indigo-400/50 focus:outline-none transition"
+                required
+              >
+                <option value="" className="bg-[#0b1020]">Select Target Tier...</option>
+                <option value="BRONZE" className="bg-[#0b1020]">Bronze</option>
+                <option value="SILVER" className="bg-[#0b1020]">Silver</option>
+                <option value="GOLD" className="bg-[#0b1020]">Gold</option>
+                <option value="DIAMOND" className="bg-[#0b1020]">Diamond</option>
+                <option value="MYTHIC" className="bg-[#0b1020]">Mythic</option>
+                <option value="GODLIKE" className="bg-[#0b1020]">Godlike</option>
+              </select>
+            </div>
+          )}
 
           {error && (
             <div className="flex items-center gap-3 rounded-2xl border border-red-400/20 bg-red-500/10 p-4 text-sm text-red-100">

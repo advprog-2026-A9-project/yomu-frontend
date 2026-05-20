@@ -55,6 +55,7 @@ export interface AchievementProgress {
     progressValue: number;
     unlocked: boolean;
     tier: string;
+    targetTier?: string | null;
 }
 
 export async function getTodayMissions(username: string): Promise<DailyMissionProgress[]> {
