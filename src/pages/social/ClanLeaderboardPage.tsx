@@ -209,7 +209,7 @@ const ClanLeaderboardPage: React.FC = () => {
         </header>
 
         {/* Tier Scoring Explanation */}
-        <GlassCard className={`${tierMeta.borderColor} ${tierMeta.bgColor} animate-fade-rise`} style={{ animationDelay: '0.1s' }}>
+        <GlassCard className={`${tierMeta.borderColor} ${tierMeta.bgColor} animate-fade-rise`}>
           <div className="flex items-start justify-between gap-4">
             <div className="flex items-start gap-3 flex-1">
               <div className={`p-2 rounded-lg ${tierMeta.bgColor} mt-0.5`}>
@@ -241,7 +241,7 @@ const ClanLeaderboardPage: React.FC = () => {
         </GlassCard>
 
         {/* Champion Achievement Banner */}
-        <GlassCard className="border-yellow-500/20 bg-gradient-to-r from-yellow-500/5 via-amber-500/5 to-orange-500/5 animate-fade-rise" style={{ animationDelay: '0.15s' }}>
+        <GlassCard className="border-yellow-500/20 bg-gradient-to-r from-yellow-500/5 via-amber-500/5 to-orange-500/5 animate-fade-rise">
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 rounded-2xl bg-yellow-500/10 flex items-center justify-center flex-shrink-0">
               <Trophy size={24} className="text-yellow-400" />
