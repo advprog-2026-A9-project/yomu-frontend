@@ -27,6 +27,10 @@ const LoginForm = () => {
         }
     };
 
+    const handleGoogleLogin = () => {
+        window.location.href = "http://localhost:8080/oauth2/authorization/google";
+    };
+
     return (
         <div className="login-form">
             <h2>Login</h2>
@@ -44,6 +48,7 @@ const LoginForm = () => {
                 onChange={(e) => setPassword(e.target.value)}
             />
             <button onClick={handleSubmit}>Login</button>
+            <button onClick={handleGoogleLogin}>Login dengan Google</button>
         </div>
     );
 };

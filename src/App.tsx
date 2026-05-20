@@ -22,6 +22,7 @@ import ForumDetailPage from './pages/discussion/ForumDetailPage';
 import TestDiscussionPage from './pages/discussion/ForumDetailPage.tsx';
 import { useAuth } from './context/AuthContext';
 import AdminDiscussionsPage from './pages/admin/AdminDiscussionsPage';
+import OAuth2CallbackPage from './pages/auth/OAuth2CallbackPage';
 
 // Placeholder for coming soon pages
 function ComingSoonPage() {
@@ -122,6 +123,7 @@ function App() {
                 {/* Auth Routes */}
                 <Route path="/register" element={<RegisterPage />} />
                 <Route path="/login" element={<LoginPage />} />
+                <Route path="/oauth2/callback" element={<OAuth2CallbackPage />} />
 
                 {/* Clan routes */}
                 <Route path="/clan" element={<ProtectedRoute><ClanPageContainer /></ProtectedRoute>} />
