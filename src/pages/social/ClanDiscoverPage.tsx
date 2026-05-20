@@ -149,7 +149,8 @@ const ClanDiscoverPage: React.FC = () => {
         {clans.map((clan) => (
           <GlassCard
             key={clan.id}
-            className="group flex flex-col justify-between hover:border-indigo-500/30 transition-all animate-fade-rise"
+            className="group flex flex-col justify-between hover:border-indigo-500/30 transition-all animate-fade-rise cursor-pointer"
+            onClick={() => navigate(`/clan/${clan.id}`)}
           >
             <div className="space-y-4">
               <div className="flex items-start justify-between">
@@ -186,7 +187,10 @@ const ClanDiscoverPage: React.FC = () => {
                 </div>
               ) : (
                 <button
-                  onClick={() => handleJoin(clan.id)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleJoin(clan.id);
+                  }}
                   disabled={joiningId !== null || clan.memberCount >= 50}
                   className={`w-full py-3 flex items-center justify-center gap-2 group/btn rounded-xl font-bold transition-all ${clan.memberCount >= 50
                     ? 'bg-white/5 text-indigo-100/30 border border-white/5 cursor-not-allowed'

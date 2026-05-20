@@ -307,7 +307,12 @@ function AchievementCard({
   onToggleShowcase: () => void; saving: boolean; delay: number;
 }) {
   const { unlocked, achievementName, milestone, milestoneType, progressValue, milestoneThreshold, tier } = achievement;
-  const pct = milestoneThreshold > 0 ? Math.min(100, (progressValue / milestoneThreshold) * 100) : 0;
+  const isRankingAchieved = milestoneType === 'ranking_achieved';
+  const displayProgressValue = isRankingAchieved ? (unlocked ? 1 : 0) : progressValue;
+  const displayMilestoneThreshold = isRankingAchieved ? 1 : milestoneThreshold;
+  const pct = isRankingAchieved
+    ? (unlocked ? 100 : 0)
+    : (milestoneThreshold > 0 ? Math.min(100, (progressValue / milestoneThreshold) * 100) : 0);
 
   const tierKey = tier || 'BRONZE';
   const styles = TIER_STYLES[tierKey] || TIER_STYLES.BRONZE;
@@ -324,17 +329,12 @@ function AchievementCard({
       style={{ animationDelay: `${delay}ms` }}
     >
       {/* Header */}
-      <div className="mb-3 flex items-start gap-3 relative z-10">
+      <div className="mb-2 flex items-center gap-3 relative z-10">
         <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border ${unlocked ? styles.iconClass : 'border-white/10 bg-white/5'}`}>
           {unlocked ? <Trophy size={20} color={styles.iconColor} /> : <Lock size={20} className="text-indigo-100/35" />}
         </div>
         <div className="min-w-0 flex-1">
           <h4 className="text-[0.9375rem] font-bold leading-snug text-white">{achievementName}</h4>
-          <p className="text-xs text-indigo-100/50 font-mono tracking-wide">
-            {milestoneType === 'ranking_achieved' && achievement.targetTier
-              ? `ranking_achieved (${achievement.targetTier})`
-              : milestoneType}
-          </p>
         </div>
       </div>
 
@@ -349,7 +349,7 @@ function AchievementCard({
             style={{ width: `${pct}%` }}
           />
         </div>
-        <span className="text-[0.6875rem] font-extrabold text-indigo-100/60 font-mono">{progressValue}/{milestoneThreshold}</span>
+        <span className="text-[0.6875rem] font-extrabold text-indigo-100/60 font-mono">{displayProgressValue}/{displayMilestoneThreshold}</span>
       </div>
 
       {/* Footer */}

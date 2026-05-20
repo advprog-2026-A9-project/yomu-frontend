@@ -55,6 +55,7 @@ interface ClanPageProps {
   clan: Clan | null;
   currentUsername: string;
   username: string;
+  showManagementControls?: boolean;
   onCreateClan: () => void;
   onDiscoverClans: () => void;
   onEditClan?: () => void;
@@ -78,6 +79,7 @@ const ClanPage: React.FC<ClanPageProps> = ({
   onDeleteClan,
   onLeaveClan,
   onKickMember,
+  showManagementControls = true,
   requests = [],
   totalRequests = 0,
   onAcceptRequest,
@@ -189,6 +191,10 @@ const ClanPage: React.FC<ClanPageProps> = ({
                 <TierBadge tier={clan.tier} />
               </div>
 
+              <p className="max-w-3xl text-sm leading-relaxed text-indigo-100/70">
+                {clan.description}
+              </p>
+
               <div className="flex flex-wrap gap-6 text-sm font-medium">
                 <div className="flex items-center gap-2 text-indigo-100/80">
                   <Trophy size={18} className="text-amber-400" />
@@ -204,55 +210,57 @@ const ClanPage: React.FC<ClanPageProps> = ({
             </div>
 
             <div className="flex gap-3">
-              {isLeader ? (
-                <>
-                  <button
-                    onClick={onEditClan}
-                    className="yomu-button-primary py-2.5 px-4 text-xs"
-                    id="btn-edit-clan"
-                  >
-                    <Edit2 size={14} className="mr-2" />
-                    Edit Clan
-                  </button>
-
-                  {showDeleteConfirm ? (
-                    <div className="flex items-center gap-2 bg-red-500/10 border border-red-500/20 rounded-xl px-3 py-1.5 animate-fade-rise">
-                      <span className="text-[10px] font-bold text-red-200 uppercase">Confirm?</span>
-                      <button
-                        onClick={onDeleteClan}
-                        className="p-1.5 hover:bg-red-500/20 rounded-lg text-red-400 transition-colors"
-                        title="Confirm Delete"
-                      >
-                        <Trash2 size={14} />
-                      </button>
-                      <button
-                        onClick={() => setShowDeleteConfirm(false)}
-                        className="text-[10px] font-bold text-indigo-200 hover:text-white px-2"
-                      >
-                        Cancel
-                      </button>
-                    </div>
-                  ) : (
+              {showManagementControls ? (
+                isLeader ? (
+                  <>
                     <button
-                      onClick={() => setShowDeleteConfirm(true)}
-                      className="yomu-button-secondary py-2.5 px-4 text-xs border-red-500/20 hover:bg-red-500/10 text-red-100"
-                      id="btn-delete-clan-init"
+                      onClick={onEditClan}
+                      className="yomu-button-primary py-2.5 px-4 text-xs"
+                      id="btn-edit-clan"
                     >
-                      <Trash2 size={14} className="mr-2" />
-                      Delete
+                      <Edit2 size={14} className="mr-2" />
+                      Edit Clan
                     </button>
-                  )}
-                </>
-              ) : (
-                <button
-                  onClick={onLeaveClan}
-                  className="yomu-button-secondary py-2.5 px-4 text-xs"
-                  id="btn-leave-clan"
-                >
-                  <LogOut size={14} className="mr-2" />
-                  Leave Clan
-                </button>
-              )}
+
+                    {showDeleteConfirm ? (
+                      <div className="flex items-center gap-2 bg-red-500/10 border border-red-500/20 rounded-xl px-3 py-1.5 animate-fade-rise">
+                        <span className="text-[10px] font-bold text-red-200 uppercase">Confirm?</span>
+                        <button
+                          onClick={onDeleteClan}
+                          className="p-1.5 hover:bg-red-500/20 rounded-lg text-red-400 transition-colors"
+                          title="Confirm Delete"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                        <button
+                          onClick={() => setShowDeleteConfirm(false)}
+                          className="text-[10px] font-bold text-indigo-200 hover:text-white px-2"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => setShowDeleteConfirm(true)}
+                        className="yomu-button-secondary py-2.5 px-4 text-xs border-red-500/20 hover:bg-red-500/10 text-red-100"
+                        id="btn-delete-clan-init"
+                      >
+                        <Trash2 size={14} className="mr-2" />
+                        Delete
+                      </button>
+                    )}
+                  </>
+                ) : (
+                  <button
+                    onClick={onLeaveClan}
+                    className="yomu-button-secondary py-2.5 px-4 text-xs"
+                    id="btn-leave-clan"
+                  >
+                    <LogOut size={14} className="mr-2" />
+                    Leave Clan
+                  </button>
+                )
+              ) : null}
             </div>
           </div>
         </header>
@@ -311,7 +319,7 @@ const ClanPage: React.FC<ClanPageProps> = ({
         </section>
 
         {/* 2.5 Join Requests (Leader Only) */}
-        {isLeader && requests.length > 0 && (
+        {showManagementControls && isLeader && requests.length > 0 && (
           <section className="space-y-4">
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-bold text-white">Join Requests</h2>
@@ -392,6 +400,7 @@ const ClanPage: React.FC<ClanPageProps> = ({
                   isMe={member.username === currentUsername}
                   clanLeaderUsername={clan.leaderUsername}
                   isClanLeader={isLeader}
+                  canManageMembers={showManagementControls}
                   onKick={() => setMemberToKick(member)}
                 />
               ))}
@@ -408,6 +417,7 @@ const ClanPage: React.FC<ClanPageProps> = ({
                       isMe={member.username === currentUsername}
                       clanLeaderUsername={clan.leaderUsername}
                       isClanLeader={isLeader}
+                      canManageMembers={showManagementControls}
                       onKick={() => setMemberToKick(member)}
                     />
                   ))}
@@ -420,7 +430,7 @@ const ClanPage: React.FC<ClanPageProps> = ({
         </section>
 
         {/* Footer actions for Leader (duplicated for visibility at bottom) */}
-        {isLeader && (
+        {showManagementControls && isLeader && (
           <div className="flex justify-end pt-4">
             <button
               onClick={onLeaveClan}
@@ -478,8 +488,9 @@ const MemberRow: React.FC<{
   isMe: boolean;
   clanLeaderUsername: string;
   isClanLeader: boolean;
+  canManageMembers?: boolean;
   onKick?: (memberUsername: string) => void
-}> = ({ member, isMe, clanLeaderUsername, isClanLeader, onKick }) => {
+}> = ({ member, isMe, clanLeaderUsername, isClanLeader, canManageMembers = true, onKick }) => {
   const isMemberLeader = member.username === clanLeaderUsername;
   const navigate = useNavigate();
 
@@ -518,7 +529,7 @@ const MemberRow: React.FC<{
         </div>
       </div>
 
-      {isClanLeader && !isMe && !isMemberLeader && (
+      {canManageMembers && isClanLeader && !isMe && !isMemberLeader && (
         <button
           onClick={() => onKick?.(member.username)}
           className="p-2 hover:bg-red-500/10 rounded-lg text-red-400/50 hover:text-red-400 transition-all group"

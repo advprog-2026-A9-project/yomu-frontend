@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import {
   getMyClan,
@@ -20,6 +20,7 @@ import Sidebar from '../../components/common/Sidebar';
 const ClanPageContainer: React.FC = () => {
   const { user, loading: authLoading, setClanInfo } = useAuth();
   const navigate = useNavigate();
+  const { id: clanIdParam } = useParams();
 
   const [clan, setClan] = useState<Clan | null>(null);
   const [loading, setLoading] = useState(true);
@@ -34,14 +35,12 @@ const ClanPageContainer: React.FC = () => {
       setLoading(true);
       setError(null);
 
-      // First, get the summary to check if user has a clan
-      const summary = await getMyClan();
+      const requestedClanId = clanIdParam?.trim();
+      const summary = requestedClanId ? { id: requestedClanId } : await getMyClan();
 
       if (summary && summary.id) {
-        // If has clan, fetch full details
         const detail = await getClanDetail(summary.id);
 
-        // Map backend detail to frontend Clan interface
         const mappedClan: Clan = {
           id: detail.id,
           name: detail.name,
@@ -62,10 +61,13 @@ const ClanPageContainer: React.FC = () => {
 
         setClan(mappedClan);
 
-        if (detail.leaderUsername === user.username) {
-          const fetchedRequests = await getClanRequests(detail.id, 0, 50); // Fetch first 50 requests
+        if (!requestedClanId && detail.leaderUsername === user.username) {
+          const fetchedRequests = await getClanRequests(detail.id, 0, 50);
           setRequests(fetchedRequests.content);
           setTotalRequests(fetchedRequests.totalElements);
+        } else {
+          setRequests([]);
+          setTotalRequests(0);
         }
       } else {
         setClan(null);
@@ -84,7 +86,7 @@ const ClanPageContainer: React.FC = () => {
     if (!authLoading && user) {
       fetchClanData();
     }
-  }, [user, authLoading]);
+  }, [user, authLoading, clanIdParam]);
 
   const handleCreateClan = () => {
     navigate('/clan/create');
@@ -202,11 +204,14 @@ const ClanPageContainer: React.FC = () => {
   };
 
 
+  const showManagementControls = !clanIdParam || clanIdParam === user?.clanId;
+
   return (
     <ClanPage
       clan={clan}
       currentUsername={user?.username || ''}
       username={user?.username || 'Pelajar'}
+      showManagementControls={showManagementControls}
       onCreateClan={handleCreateClan}
       onDiscoverClans={handleDiscoverClans}
       onEditClan={handleEditClan}

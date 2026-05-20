@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Trophy,
   Shield,
@@ -67,6 +68,7 @@ const TIER_INFO: Record<string, {
 
 const ClanLeaderboardPage: React.FC = () => {
   const { user, loading: authLoading } = useAuth();
+  const navigate = useNavigate();
   const [data, setData] = useState<LeaderboardByTier[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -130,8 +132,9 @@ const ClanLeaderboardPage: React.FC = () => {
   const RankRow = ({ entry, isUserClan }: { entry: any, isUserClan?: boolean }) => (
     <GlassCard
       key={entry.clanId}
-      className={`group grid grid-cols-12 items-center px-6 py-4 transition-all hover:border-indigo-500/30 ${isUserClan ? 'ring-2 ring-indigo-500/50 bg-indigo-500/20 shadow-[0_0_20px_rgba(99,102,241,0.15)] z-10' : (entry.rank <= 3 ? 'bg-indigo-500/[0.03]' : '')
+      className={`group grid grid-cols-12 items-center px-6 py-4 transition-all hover:border-indigo-500/30 cursor-pointer ${isUserClan ? 'ring-2 ring-indigo-500/50 bg-indigo-500/20 shadow-[0_0_20px_rgba(99,102,241,0.15)] z-10' : (entry.rank <= 3 ? 'bg-indigo-500/[0.03]' : '')
         }`}
+      onClick={() => navigate(`/clan/${entry.clanId}`)}
     >
       <div className="col-span-1 flex items-center">
         {getRankIcon(entry.rank)}

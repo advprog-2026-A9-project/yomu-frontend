@@ -125,6 +125,7 @@ function App() {
 
                 {/* Clan routes */}
                 <Route path="/clan" element={<ProtectedRoute><ClanPageContainer /></ProtectedRoute>} />
+                <Route path="/clan/:id" element={<ProtectedRoute><ClanPageContainer /></ProtectedRoute>} />
                 <Route path="/clan/create" element={<ProtectedRoute><ClanFormPage /></ProtectedRoute>} />
                 <Route path="/clan/:id/edit" element={<ProtectedRoute><ClanFormPage /></ProtectedRoute>} />
                 <Route path="/discover-clans" element={<ProtectedRoute><ClanDiscoverPage /></ProtectedRoute>} />
