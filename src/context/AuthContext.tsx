@@ -38,7 +38,7 @@ const normalizeAuthUser = (payload: AuthPayload, fallbackToken: string | null = 
     }
 
     return {
-        userId: data.userId ?? payload.userId ?? "",
+        userId: data.userId ?? data.id ?? payload.userId ?? payload.id ?? "",
         username: data.username ?? payload.username ?? "",
         role: data.role ?? payload.role ?? "USER",
         token,

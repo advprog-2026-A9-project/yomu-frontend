@@ -1,4 +1,4 @@
-const API_URL = 'http://localhost:8080/api/discussion';
+const API_URL = `${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/api/discussion`;
 
 const getAuthHeader = () => {
     const token = localStorage.getItem('token');
@@ -10,8 +10,12 @@ export interface CommentData {
     content: string;
     userId: string;
     readingId: string;
+    authorName?: string;
     parentId?: string | null;
     createdAt: string | null;
+    upvotes?: number;
+    downvotes?: number;
+    fireReactions?: number;
 }
 
 export const discussionService = {
@@ -96,18 +100,18 @@ export const discussionService = {
         }
     },
 
-    addReaction: async (commentId: string, userId: string, type: 'UPVOTE' | 'DOWNVOTE' | 'EMOJI', emojiCode?: string): Promise<void> => {
+    addReaction: async (commentId: string, type: 'UPVOTE' | 'DOWNVOTE' | 'EMOJI', emojiCode?: string): Promise<CommentData> => {
         try {
             const response = await fetch(`${API_URL}/${commentId}/reaction`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    "X-User-Id": userId, // Mengirim userId via Header sesuai controller backend
                     ...getAuthHeader()
                 } as HeadersInit,
                 body: JSON.stringify({ type, emojiCode }),
             });
             if (!response.ok) throw new Error("Gagal menambahkan reaksi");
+            return await response.json();
         } catch (error) {
             console.error("Error adding reaction:", error);
             throw error;

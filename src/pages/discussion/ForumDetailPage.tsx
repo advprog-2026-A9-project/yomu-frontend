@@ -40,6 +40,7 @@ function ForumDetailPage() {
             <DiscussionSection
               readingId={readingId}
               currentUserId={currentUserId}
+              currentUserRole={user?.role}
             />
           ) : (
             <p className="text-red-400">Harap login terlebih dahulu untuk mengakses diskusi.</p>

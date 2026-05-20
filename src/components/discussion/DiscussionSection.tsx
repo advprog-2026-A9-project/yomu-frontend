@@ -91,10 +91,9 @@ const DiscussionSection: React.FC<DiscussionProps> = ({
 
   const handleReaction = async (commentId: string, type: 'UPVOTE' | 'DOWNVOTE' | 'EMOJI', emojiCode?: string) => {
     try {
-      await discussionService.addReaction(commentId, currentUserId, type, emojiCode);
+      const updated = await discussionService.addReaction(commentId, type, emojiCode);
+      setComments((prev) => prev.map((c) => (c.id === commentId ? updated : c)));
       showToast(`Reaksi ${emojiCode || type} dikirim!`);
-      // Penting: Refresh data agar angka counter reaksi terbaru muncul
-      void loadComments(); 
     } catch (error) {
       showToast("Gagal mengirim reaksi", "error");
     }
@@ -122,7 +121,7 @@ const DiscussionSection: React.FC<DiscussionProps> = ({
       <div key={comment.id} className={`p-${isReply ? '3' : '4'} bg-gray-${isReply ? '800' : '900'} rounded-lg border border-gray-${isReply ? '700' : '600'} ${isReply ? 'mb-3' : ''}`}>
         <div className="flex justify-between items-center mb-2">
           <span className={`text-${isReply ? 'xs' : 'sm'} font-bold text-blue-${isReply ? '400' : '300'}`}>
-            User {comment.userId.substring(0, 6)}...
+            {comment.authorName || "Unknown User"}
           </span>
           <span className={`text-${isReply ? '[10px]' : 'xs'} text-gray-500`}>
             {comment.createdAt ? new Date(comment.createdAt).toLocaleDateString() : "Baru saja"}
@@ -151,13 +150,13 @@ const DiscussionSection: React.FC<DiscussionProps> = ({
                 {/* FITUR BARU: Tombol Reaksi dengan Counter Angka */}
                 <div className="flex space-x-2">
                   <button onClick={() => handleReaction(comment.id, 'UPVOTE')} className="flex items-center gap-1 text-xs bg-gray-800 px-2 py-1 rounded hover:bg-gray-700 transition">
-                    👍 <span className="font-bold text-blue-400">{(comment as any).upvotes || 0}</span>
+                    👍 <span className="font-bold text-blue-400">{comment.upvotes ?? 0}</span>
                   </button>
                   <button onClick={() => handleReaction(comment.id, 'DOWNVOTE')} className="flex items-center gap-1 text-xs bg-gray-800 px-2 py-1 rounded hover:bg-gray-700 transition">
-                    👎 <span className="font-bold text-red-400">{(comment as any).downvotes || 0}</span>
+                    👎 <span className="font-bold text-red-400">{comment.downvotes ?? 0}</span>
                   </button>
                   <button onClick={() => handleReaction(comment.id, 'EMOJI', '🔥')} className="flex items-center gap-1 text-xs bg-gray-800 px-2 py-1 rounded hover:bg-gray-700 transition">
-                    🔥 <span className="font-bold text-orange-400">{(comment as any).fireReactions || 0}</span>
+                    🔥 <span className="font-bold text-orange-400">{comment.fireReactions ?? 0}</span>
                   </button>
                 </div>
 
