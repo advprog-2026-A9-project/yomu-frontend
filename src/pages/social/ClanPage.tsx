@@ -92,6 +92,33 @@ const ClanPage: React.FC<ClanPageProps> = ({
     return new Intl.NumberFormat().format(score);
   };
 
+  const formatRemainingTime = (durationStr: string): string => {
+    if (!durationStr || !durationStr.startsWith('Until ')) {
+      return durationStr;
+    }
+    try {
+      const endStr = durationStr.substring(6); // Remove "Until "
+      const endTime = new Date(endStr).getTime();
+      const now = Date.now();
+      const diff = endTime - now;
+      if (diff <= 0) {
+        return 'Expired';
+      }
+      const totalMinutes = Math.floor(diff / 60000);
+      const hours = Math.floor(totalMinutes / 60);
+      const minutes = totalMinutes % 60;
+      if (hours > 0) {
+        return `${hours}h ${minutes}m left`;
+      }
+      if (minutes > 0) {
+        return `${minutes}m left`;
+      }
+      return 'Less than 1m left';
+    } catch (e) {
+      return durationStr;
+    }
+  };
+
   const confirmKick = () => {
     if (memberToKick && onKickMember) {
       onKickMember(memberToKick.username);
@@ -255,7 +282,7 @@ const ClanPage: React.FC<ClanPageProps> = ({
                         <span className="text-[10px] bg-emerald-500/20 text-emerald-300 px-1 py-0.2 rounded font-mono font-bold">
                           {buff.multiplier}
                         </span>
-                        <span className="text-[10px] text-indigo-100/50 font-medium">{buff.duration}</span>
+                        <span className="text-[10px] text-indigo-100/50 font-medium">{formatRemainingTime(buff.duration)}</span>
                       </div>
                     </div>
                   </div>
@@ -273,7 +300,7 @@ const ClanPage: React.FC<ClanPageProps> = ({
                         <span className="text-[10px] bg-red-500/20 text-red-300 px-1 py-0.2 rounded font-mono font-bold">
                           {debuff.multiplier}
                         </span>
-                        <span className="text-[10px] text-indigo-100/50 font-medium">{debuff.duration}</span>
+                        <span className="text-[10px] text-indigo-100/50 font-medium">{formatRemainingTime(debuff.duration)}</span>
                       </div>
                     </div>
                   </div>
