@@ -21,7 +21,6 @@ import { useNavigate } from 'react-router-dom';
 
 // Types based on Backend DTOs
 export interface ClanMember {
-  userId: string;
   username: string;
   role: 'KETUA' | 'ANGGOTA' | 'LEADER' | 'MEMBER';
   contribution: number;
@@ -41,7 +40,7 @@ export interface Clan {
   id: string;
   name: string;
   description: string;
-  leaderUserId: string;
+  leaderUsername: string;
   tier: 'BRONZE' | 'SILVER' | 'GOLD' | 'DIAMOND';
   rank: number;
   score: number;
@@ -54,14 +53,15 @@ export interface Clan {
 
 interface ClanPageProps {
   clan: Clan | null;
-  currentUserId: string;
+  currentUsername: string;
   username: string;
+  showManagementControls?: boolean;
   onCreateClan: () => void;
   onDiscoverClans: () => void;
   onEditClan?: () => void;
   onDeleteClan?: () => void;
   onLeaveClan?: () => void;
-  onKickMember?: (memberId: string) => void;
+  onKickMember?: (memberUsername: string) => void;
   requests?: ClanJoinRequestResponse[];
   totalRequests?: number;
   onAcceptRequest?: (id: number) => void;
@@ -71,7 +71,7 @@ interface ClanPageProps {
 
 const ClanPage: React.FC<ClanPageProps> = ({
   clan,
-  currentUserId,
+  currentUsername,
   username,
   onCreateClan,
   onDiscoverClans,
@@ -79,6 +79,7 @@ const ClanPage: React.FC<ClanPageProps> = ({
   onDeleteClan,
   onLeaveClan,
   onKickMember,
+  showManagementControls = true,
   requests = [],
   totalRequests = 0,
   onAcceptRequest,
@@ -93,9 +94,36 @@ const ClanPage: React.FC<ClanPageProps> = ({
     return new Intl.NumberFormat().format(score);
   };
 
+  const formatRemainingTime = (durationStr: string): string => {
+    if (!durationStr || !durationStr.startsWith('Until ')) {
+      return durationStr;
+    }
+    try {
+      const endStr = durationStr.substring(6); // Remove "Until "
+      const endTime = new Date(endStr).getTime();
+      const now = Date.now();
+      const diff = endTime - now;
+      if (diff <= 0) {
+        return 'Expired';
+      }
+      const totalMinutes = Math.floor(diff / 60000);
+      const hours = Math.floor(totalMinutes / 60);
+      const minutes = totalMinutes % 60;
+      if (hours > 0) {
+        return `${hours}h ${minutes}m left`;
+      }
+      if (minutes > 0) {
+        return `${minutes}m left`;
+      }
+      return 'Less than 1m left';
+    } catch (e) {
+      return durationStr;
+    }
+  };
+
   const confirmKick = () => {
     if (memberToKick && onKickMember) {
-      onKickMember(memberToKick.userId);
+      onKickMember(memberToKick.username);
       setMemberToKick(null);
     }
   };
@@ -144,7 +172,7 @@ const ClanPage: React.FC<ClanPageProps> = ({
   }
 
   // State B: User has a clan
-  const isLeader = currentUserId === clan.leaderUserId;
+  const isLeader = currentUsername === clan.leaderUsername;
 
   return (
     <div className="yomu-shell yomu-grid-noise lg:flex min-h-screen">
@@ -163,6 +191,10 @@ const ClanPage: React.FC<ClanPageProps> = ({
                 <TierBadge tier={clan.tier} />
               </div>
 
+              <p className="max-w-3xl text-sm leading-relaxed text-indigo-100/70">
+                {clan.description}
+              </p>
+
               <div className="flex flex-wrap gap-6 text-sm font-medium">
                 <div className="flex items-center gap-2 text-indigo-100/80">
                   <Trophy size={18} className="text-amber-400" />
@@ -178,55 +210,57 @@ const ClanPage: React.FC<ClanPageProps> = ({
             </div>
 
             <div className="flex gap-3">
-              {isLeader ? (
-                <>
-                  <button
-                    onClick={onEditClan}
-                    className="yomu-button-primary py-2.5 px-4 text-xs"
-                    id="btn-edit-clan"
-                  >
-                    <Edit2 size={14} className="mr-2" />
-                    Edit Clan
-                  </button>
-
-                  {showDeleteConfirm ? (
-                    <div className="flex items-center gap-2 bg-red-500/10 border border-red-500/20 rounded-xl px-3 py-1.5 animate-fade-rise">
-                      <span className="text-[10px] font-bold text-red-200 uppercase">Confirm?</span>
-                      <button
-                        onClick={onDeleteClan}
-                        className="p-1.5 hover:bg-red-500/20 rounded-lg text-red-400 transition-colors"
-                        title="Confirm Delete"
-                      >
-                        <Trash2 size={14} />
-                      </button>
-                      <button
-                        onClick={() => setShowDeleteConfirm(false)}
-                        className="text-[10px] font-bold text-indigo-200 hover:text-white px-2"
-                      >
-                        Cancel
-                      </button>
-                    </div>
-                  ) : (
+              {showManagementControls ? (
+                isLeader ? (
+                  <>
                     <button
-                      onClick={() => setShowDeleteConfirm(true)}
-                      className="yomu-button-secondary py-2.5 px-4 text-xs border-red-500/20 hover:bg-red-500/10 text-red-100"
-                      id="btn-delete-clan-init"
+                      onClick={onEditClan}
+                      className="yomu-button-primary py-2.5 px-4 text-xs"
+                      id="btn-edit-clan"
                     >
-                      <Trash2 size={14} className="mr-2" />
-                      Delete
+                      <Edit2 size={14} className="mr-2" />
+                      Edit Clan
                     </button>
-                  )}
-                </>
-              ) : (
-                <button
-                  onClick={onLeaveClan}
-                  className="yomu-button-secondary py-2.5 px-4 text-xs"
-                  id="btn-leave-clan"
-                >
-                  <LogOut size={14} className="mr-2" />
-                  Leave Clan
-                </button>
-              )}
+
+                    {showDeleteConfirm ? (
+                      <div className="flex items-center gap-2 bg-red-500/10 border border-red-500/20 rounded-xl px-3 py-1.5 animate-fade-rise">
+                        <span className="text-[10px] font-bold text-red-200 uppercase">Confirm?</span>
+                        <button
+                          onClick={onDeleteClan}
+                          className="p-1.5 hover:bg-red-500/20 rounded-lg text-red-400 transition-colors"
+                          title="Confirm Delete"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                        <button
+                          onClick={() => setShowDeleteConfirm(false)}
+                          className="text-[10px] font-bold text-indigo-200 hover:text-white px-2"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => setShowDeleteConfirm(true)}
+                        className="yomu-button-secondary py-2.5 px-4 text-xs border-red-500/20 hover:bg-red-500/10 text-red-100"
+                        id="btn-delete-clan-init"
+                      >
+                        <Trash2 size={14} className="mr-2" />
+                        Delete
+                      </button>
+                    )}
+                  </>
+                ) : (
+                  <button
+                    onClick={onLeaveClan}
+                    className="yomu-button-secondary py-2.5 px-4 text-xs"
+                    id="btn-leave-clan"
+                  >
+                    <LogOut size={14} className="mr-2" />
+                    Leave Clan
+                  </button>
+                )
+              ) : null}
             </div>
           </div>
         </header>
@@ -246,26 +280,36 @@ const ClanPage: React.FC<ClanPageProps> = ({
                 {clan.activeBuffs.map((buff, idx) => (
                   <div
                     key={`buff-${idx}`}
-                    className="flex-shrink-0 flex items-center gap-3 p-3 rounded-xl border transition-all duration-300 min-w-[160px] bg-emerald-500/5 border-emerald-500/20 text-emerald-100 hover:-translate-y-0.5 hover:shadow-lg hover:border-emerald-500/40 hover:bg-emerald-500/10 hover:shadow-emerald-500/10 animate-fade-rise"
+                    className="flex-shrink-0 flex items-center gap-3 p-3 rounded-xl border transition-all duration-300 min-w-[180px] bg-emerald-500/5 border-emerald-500/20 text-emerald-100 hover:-translate-y-0.5 hover:shadow-lg hover:border-emerald-500/40 hover:bg-emerald-500/10 hover:shadow-emerald-500/10 animate-fade-rise"
                     style={{ animationDelay: `${idx * 0.1}s` }}
                   >
                     <div className="text-emerald-400 bg-emerald-500/10 p-1.5 rounded-lg"><Shield size={16} /></div>
                     <div className="flex flex-col">
                       <span className="text-xs font-bold">{buff.name}</span>
-                      <span className="text-[10px] text-indigo-100/50 font-medium">{buff.duration}</span>
+                      <div className="flex items-center gap-1.5 mt-0.5">
+                        <span className="text-[10px] bg-emerald-500/20 text-emerald-300 px-1 py-0.2 rounded font-mono font-bold">
+                          {buff.multiplier}
+                        </span>
+                        <span className="text-[10px] text-indigo-100/50 font-medium">{formatRemainingTime(buff.duration)}</span>
+                      </div>
                     </div>
                   </div>
                 ))}
                 {clan.debuffs.map((debuff, idx) => (
                   <div
                     key={`debuff-${idx}`}
-                    className="flex-shrink-0 flex items-center gap-3 p-3 rounded-xl border transition-all duration-300 min-w-[160px] bg-red-500/5 border-red-500/20 text-red-100 hover:-translate-y-0.5 hover:shadow-lg hover:border-red-500/40 hover:bg-red-500/10 hover:shadow-red-500/10 animate-fade-rise"
+                    className="flex-shrink-0 flex items-center gap-3 p-3 rounded-xl border transition-all duration-300 min-w-[180px] bg-red-500/5 border-red-500/20 text-red-100 hover:-translate-y-0.5 hover:shadow-lg hover:border-red-500/40 hover:bg-red-500/10 hover:shadow-red-500/10 animate-fade-rise"
                     style={{ animationDelay: `${(clan.activeBuffs.length + idx) * 0.1}s` }}
                   >
                     <div className="text-red-400 bg-red-500/10 p-1.5 rounded-lg"><AlertCircle size={16} /></div>
                     <div className="flex flex-col">
                       <span className="text-xs font-bold">{debuff.name}</span>
-                      <span className="text-[10px] text-indigo-100/50 font-medium">{debuff.duration}</span>
+                      <div className="flex items-center gap-1.5 mt-0.5">
+                        <span className="text-[10px] bg-red-500/20 text-red-300 px-1 py-0.2 rounded font-mono font-bold">
+                          {debuff.multiplier}
+                        </span>
+                        <span className="text-[10px] text-indigo-100/50 font-medium">{formatRemainingTime(debuff.duration)}</span>
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -275,7 +319,7 @@ const ClanPage: React.FC<ClanPageProps> = ({
         </section>
 
         {/* 2.5 Join Requests (Leader Only) */}
-        {isLeader && requests.length > 0 && (
+        {showManagementControls && isLeader && requests.length > 0 && (
           <section className="space-y-4">
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-bold text-white">Join Requests</h2>
@@ -351,11 +395,12 @@ const ClanPage: React.FC<ClanPageProps> = ({
             <div className="divide-y divide-white/5">
               {clan.members.slice(0, 10).map((member) => (
                 <MemberRow
-                  key={member.userId}
+                  key={member.username}
                   member={member}
-                  isMe={member.userId === currentUserId}
-                  clanLeaderId={clan.leaderUserId}
+                  isMe={member.username === currentUsername}
+                  clanLeaderUsername={clan.leaderUsername}
                   isClanLeader={isLeader}
+                  canManageMembers={showManagementControls}
                   onKick={() => setMemberToKick(member)}
                 />
               ))}
@@ -367,11 +412,12 @@ const ClanPage: React.FC<ClanPageProps> = ({
                 <div className="max-h-[400px] overflow-y-auto divide-y divide-white/5 scrollbar-thin">
                   {clan.members.slice(10).map((member) => (
                     <MemberRow
-                      key={member.userId}
+                      key={member.username}
                       member={member}
-                      isMe={member.userId === currentUserId}
-                      clanLeaderId={clan.leaderUserId}
+                      isMe={member.username === currentUsername}
+                      clanLeaderUsername={clan.leaderUsername}
                       isClanLeader={isLeader}
+                      canManageMembers={showManagementControls}
                       onKick={() => setMemberToKick(member)}
                     />
                   ))}
@@ -384,7 +430,7 @@ const ClanPage: React.FC<ClanPageProps> = ({
         </section>
 
         {/* Footer actions for Leader (duplicated for visibility at bottom) */}
-        {isLeader && (
+        {showManagementControls && isLeader && (
           <div className="flex justify-end pt-4">
             <button
               onClick={onLeaveClan}
@@ -440,11 +486,12 @@ const ClanPage: React.FC<ClanPageProps> = ({
 const MemberRow: React.FC<{
   member: ClanMember;
   isMe: boolean;
-  clanLeaderId: string;
+  clanLeaderUsername: string;
   isClanLeader: boolean;
-  onKick?: (memberId: string) => void
-}> = ({ member, isMe, clanLeaderId, isClanLeader, onKick }) => {
-  const isMemberLeader = member.userId === clanLeaderId;
+  canManageMembers?: boolean;
+  onKick?: (memberUsername: string) => void
+}> = ({ member, isMe, clanLeaderUsername, isClanLeader, canManageMembers = true, onKick }) => {
+  const isMemberLeader = member.username === clanLeaderUsername;
   const navigate = useNavigate();
 
   const handleRowClick = (e: React.MouseEvent) => {
@@ -452,7 +499,7 @@ const MemberRow: React.FC<{
     if ((e.target as HTMLElement).closest('button')) {
       return;
     }
-    navigate(`/profile/${member.userId}`);
+    navigate(`/profile/${member.username}`);
   };
 
   return (
@@ -482,9 +529,9 @@ const MemberRow: React.FC<{
         </div>
       </div>
 
-      {isClanLeader && !isMe && !isMemberLeader && (
+      {canManageMembers && isClanLeader && !isMe && !isMemberLeader && (
         <button
-          onClick={() => onKick?.(member.userId)}
+          onClick={() => onKick?.(member.username)}
           className="p-2 hover:bg-red-500/10 rounded-lg text-red-400/50 hover:text-red-400 transition-all group"
           title={`Kick ${member.username}`}
         >

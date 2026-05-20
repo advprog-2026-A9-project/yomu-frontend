@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import type { HTMLAttributes, ReactNode } from 'react';
 import { ChevronLeft, ChevronRight, Search, X } from 'lucide-react';
 
 export function SectionHeader({
@@ -22,11 +22,12 @@ export function SectionHeader({
 export function GlassCard({
   children,
   className = '',
-}: {
+  ...props
+}: HTMLAttributes<HTMLElement> & {
   children: ReactNode;
   className?: string;
 }) {
-  return <article className={`yomu-card ${className}`.trim()}>{children}</article>;
+  return <article className={`yomu-card ${className}`.trim()} {...props}>{children}</article>;
 }
 
 export function ProgressBar({

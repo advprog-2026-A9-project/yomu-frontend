@@ -37,10 +37,12 @@ export interface DailyMissionProgress {
     dailyMissionName: string;
     missionType: string;
     milestone: string;
-    targetCount: number;
+    targetCount?: number | null;
+    accuracyThreshold?: number | null;
+    requiredCount?: number | null;
     progressValue: number;
     completed: boolean;
-    rewardDescription: string;
+    rewardScore: number;
 }
 
 export interface AchievementProgress {
@@ -49,13 +51,15 @@ export interface AchievementProgress {
     milestone: string;
     milestoneType: string;
     milestoneThreshold: number;
+    accuracyThreshold?: number | null;
     progressValue: number;
     unlocked: boolean;
     tier: string;
+    targetTier?: string | null;
 }
 
-export async function getTodayMissions(userId: string): Promise<DailyMissionProgress[]> {
-    const response = await fetchWithTimeout(`${BASE_URL}/api/gamification/progress/daily-missions/today?userId=${userId}`, {
+export async function getTodayMissions(username: string): Promise<DailyMissionProgress[]> {
+    const response = await fetchWithTimeout(`${BASE_URL}/api/gamification/progress/daily-missions/today?username=${username}`, {
         method: 'GET',
         headers: authHeaders(),
     });
@@ -67,8 +71,8 @@ export async function getTodayMissions(userId: string): Promise<DailyMissionProg
     return response.json();
 }
 
-export async function getMyAchievements(userId: string): Promise<AchievementProgress[]> {
-    const response = await fetchWithTimeout(`${BASE_URL}/api/gamification/progress/achievements?userId=${userId}`, {
+export async function getMyAchievements(username: string): Promise<AchievementProgress[]> {
+    const response = await fetchWithTimeout(`${BASE_URL}/api/gamification/progress/achievements?username=${username}`, {
         method: 'GET',
         headers: authHeaders(),
     });
@@ -80,8 +84,8 @@ export async function getMyAchievements(userId: string): Promise<AchievementProg
     return response.json();
 }
 
-export async function getShowcase(userId: string): Promise<string[]> {
-    const response = await fetchWithTimeout(`${BASE_URL}/api/gamification/showcase?userId=${userId}`, {
+export async function getShowcase(username: string): Promise<string[]> {
+    const response = await fetchWithTimeout(`${BASE_URL}/api/gamification/showcase?username=${username}`, {
         method: 'GET',
         headers: authHeaders(),
     });
@@ -93,11 +97,11 @@ export async function getShowcase(userId: string): Promise<string[]> {
     return response.json();
 }
 
-export async function updateShowcase(userId: string, achievementIds: string[]): Promise<void> {
+export async function updateShowcase(username: string, achievementIds: string[]): Promise<void> {
     const response = await fetchWithTimeout(`${BASE_URL}/api/gamification/showcase`, {
         method: 'PUT',
         headers: authHeaders(),
-        body: JSON.stringify({ userId, achievementIds }),
+        body: JSON.stringify({ username, achievementIds }),
     });
 
     if (!response.ok) {

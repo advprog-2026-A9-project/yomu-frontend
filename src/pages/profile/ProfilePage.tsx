@@ -6,7 +6,6 @@ import {
   Trophy,
   BookOpen,
   Calendar,
-  Zap,
   GraduationCap,
   CheckCircle2,
   Pencil,
@@ -16,7 +15,7 @@ import {
 import { useAuth } from '../../context/AuthContext';
 import Sidebar from '../../components/common/Sidebar';
 import { TierBadge } from '../../components/common/UI';
-import { getUserProfile, updateMyBio, UserProfile, updateMyProfile,} from '../../services/profileAPI';
+import { getUserProfile, updateMyBio, UserProfile, updateMyProfile, } from '../../services/profileAPI';
 
 const TIER_STYLES: Record<
   string,
@@ -128,24 +127,24 @@ const ProfilePage: React.FC = () => {
   };
 
   const handleSaveProfile = async () => {
-      try {
-          setSavingProfile(true);
-          setProfileError(null);
-          await updateMyProfile({
-              displayName: tempDisplayName !== profile?.displayName ? tempDisplayName : undefined,
-              oldPassword: tempOldPassword || undefined,
-              newPassword: tempNewPassword || undefined,
-          });
-          const updated = await getUserProfile('me');
-          setProfile(updated);
-          setIsEditingProfile(false);
-          setTempOldPassword('');
-          setTempNewPassword('');
-      } catch (err: unknown) {
-          setProfileError(err instanceof Error ? err.message : 'Gagal memperbarui profil');
-      } finally {
-          setSavingProfile(false);
-      }
+    try {
+      setSavingProfile(true);
+      setProfileError(null);
+      await updateMyProfile({
+        displayName: tempDisplayName !== profile?.displayName ? tempDisplayName : undefined,
+        oldPassword: tempOldPassword || undefined,
+        newPassword: tempNewPassword || undefined,
+      });
+      const updated = await getUserProfile('me');
+      setProfile(updated);
+      setIsEditingProfile(false);
+      setTempOldPassword('');
+      setTempNewPassword('');
+    } catch (err: unknown) {
+      setProfileError(err instanceof Error ? err.message : 'Gagal memperbarui profil');
+    } finally {
+      setSavingProfile(false);
+    }
   };
 
   if (loading) {
@@ -187,8 +186,7 @@ const ProfilePage: React.FC = () => {
               </div>
               <div className="lg:col-span-2 flex flex-col space-y-4">
                 <div className="h-6 w-36 bg-white/5 rounded-lg animate-pulse" />
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 flex-1">
-                  <div className="yomu-glass rounded-2xl p-6 min-h-[146px] bg-white/5 animate-pulse" />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 flex-1">
                   <div className="yomu-glass rounded-2xl p-6 min-h-[146px] bg-white/5 animate-pulse" />
                   <div className="yomu-glass rounded-2xl p-6 min-h-[146px] bg-white/5 animate-pulse" />
                 </div>
@@ -368,74 +366,74 @@ const ProfilePage: React.FC = () => {
               </div>
             </div>
           </section>
-          
+
           {isEditingProfile && (
-          <section className="yomu-glass rounded-2xl p-6 sm:p-8 space-y-4 animate-fade-rise">
-            <h2 className="text-lg font-bold text-white flex items-center gap-2">
-              <Pencil size={18} className="text-indigo-400" />
-              Edit Profil
-            </h2>
+            <section className="yomu-glass rounded-2xl p-6 sm:p-8 space-y-4 animate-fade-rise">
+              <h2 className="text-lg font-bold text-white flex items-center gap-2">
+                <Pencil size={18} className="text-indigo-400" />
+                Edit Profil
+              </h2>
 
-            {profileError && (
-              <p className="text-xs text-red-400 font-semibold">{profileError}</p>
-            )}
+              {profileError && (
+                <p className="text-xs text-red-400 font-semibold">{profileError}</p>
+              )}
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-indigo-200/70">Display Name</label>
-                <input
-                  type="text"
-                  value={tempDisplayName}
-                  onChange={(e) => setTempDisplayName(e.target.value)}
-                  className="w-full p-3 text-sm text-indigo-100 bg-white/5 border border-white/10 rounded-xl focus:outline-none focus:border-indigo-500/50 transition-colors"
-                />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-indigo-200/70">Display Name</label>
+                  <input
+                    type="text"
+                    value={tempDisplayName}
+                    onChange={(e) => setTempDisplayName(e.target.value)}
+                    className="w-full p-3 text-sm text-indigo-100 bg-white/5 border border-white/10 rounded-xl focus:outline-none focus:border-indigo-500/50 transition-colors"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-indigo-200/70">Password Lama</label>
+                  <input
+                    type="password"
+                    value={tempOldPassword}
+                    onChange={(e) => setTempOldPassword(e.target.value)}
+                    placeholder="Isi jika ingin ganti password"
+                    className="w-full p-3 text-sm text-indigo-100 bg-white/5 border border-white/10 rounded-xl focus:outline-none focus:border-indigo-500/50 transition-colors"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-indigo-200/70">Password Baru</label>
+                  <input
+                    type="password"
+                    value={tempNewPassword}
+                    onChange={(e) => setTempNewPassword(e.target.value)}
+                    placeholder="Isi jika ingin ganti password"
+                    className="w-full p-3 text-sm text-indigo-100 bg-white/5 border border-white/10 rounded-xl focus:outline-none focus:border-indigo-500/50 transition-colors"
+                  />
+                </div>
               </div>
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-indigo-200/70">Password Lama</label>
-                <input
-                  type="password"
-                  value={tempOldPassword}
-                  onChange={(e) => setTempOldPassword(e.target.value)}
-                  placeholder="Isi jika ingin ganti password"
-                  className="w-full p-3 text-sm text-indigo-100 bg-white/5 border border-white/10 rounded-xl focus:outline-none focus:border-indigo-500/50 transition-colors"
-                />
-              </div>
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-indigo-200/70">Password Baru</label>
-                <input
-                  type="password"
-                  value={tempNewPassword}
-                  onChange={(e) => setTempNewPassword(e.target.value)}
-                  placeholder="Isi jika ingin ganti password"
-                  className="w-full p-3 text-sm text-indigo-100 bg-white/5 border border-white/10 rounded-xl focus:outline-none focus:border-indigo-500/50 transition-colors"
-                />
-              </div>
-            </div>
 
-            <div className="flex justify-end gap-2">
-              <button
-                onClick={() => setIsEditingProfile(false)}
-                className="flex items-center gap-1 bg-white/5 border border-white/5 hover:bg-white/10 text-indigo-200/70 hover:text-white px-3 py-1.5 rounded-xl transition-all text-xs font-semibold"
-                disabled={savingProfile}
-              >
-                <X size={12} />
-                <span>Batal</span>
-              </button>
-              <button
-                onClick={handleSaveProfile}
-                className="flex items-center gap-1 bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-1.5 rounded-xl shadow-lg shadow-indigo-600/20 transition-all text-xs font-semibold disabled:opacity-50"
-                disabled={savingProfile}
-              >
-                {savingProfile ? (
-                  <span className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                ) : (
-                  <Check size={12} />
-                )}
-                <span>{savingProfile ? 'Menyimpan...' : 'Simpan'}</span>
-              </button>
-            </div>
-          </section>
-        )}
+              <div className="flex justify-end gap-2">
+                <button
+                  onClick={() => setIsEditingProfile(false)}
+                  className="flex items-center gap-1 bg-white/5 border border-white/5 hover:bg-white/10 text-indigo-200/70 hover:text-white px-3 py-1.5 rounded-xl transition-all text-xs font-semibold"
+                  disabled={savingProfile}
+                >
+                  <X size={12} />
+                  <span>Batal</span>
+                </button>
+                <button
+                  onClick={handleSaveProfile}
+                  className="flex items-center gap-1 bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-1.5 rounded-xl shadow-lg shadow-indigo-600/20 transition-all text-xs font-semibold disabled:opacity-50"
+                  disabled={savingProfile}
+                >
+                  {savingProfile ? (
+                    <span className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  ) : (
+                    <Check size={12} />
+                  )}
+                  <span>{savingProfile ? 'Menyimpan...' : 'Simpan'}</span>
+                </button>
+              </div>
+            </section>
+          )}
 
           {/* 2. Stats Grid & Clan Info */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -485,7 +483,7 @@ const ProfilePage: React.FC = () => {
                 Statistik Membaca
               </h2>
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 flex-1">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 flex-1">
 
                 {/* Stat 1 */}
                 <div className="yomu-glass rounded-2xl p-6 border-white/5 hover:border-white/10 transition-colors animate-fade-rise flex flex-col justify-between">
@@ -500,17 +498,6 @@ const ProfilePage: React.FC = () => {
 
                 {/* Stat 2 */}
                 <div className="yomu-glass rounded-2xl p-6 border-white/5 hover:border-white/10 transition-colors animate-fade-rise flex flex-col justify-between" style={{ animationDelay: '0.1s' }}>
-                  <div className="text-amber-400 bg-amber-500/10 p-2 w-fit rounded-lg mb-4">
-                    <Zap size={20} />
-                  </div>
-                  <div className="space-y-0.5">
-                    <p className="text-3xl font-black text-white">{profile.readingStats.totalMinutes} menit</p>
-                    <p className="text-xs font-semibold text-indigo-200/50">Waktu Membaca</p>
-                  </div>
-                </div>
-
-                {/* Stat 3 */}
-                <div className="yomu-glass rounded-2xl p-6 border-white/5 hover:border-white/10 transition-colors animate-fade-rise flex flex-col justify-between" style={{ animationDelay: '0.2s' }}>
                   <div className="text-emerald-400 bg-emerald-500/10 p-2 w-fit rounded-lg mb-4">
                     <CheckCircle2 size={20} />
                   </div>

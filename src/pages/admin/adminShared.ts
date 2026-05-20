@@ -16,7 +16,6 @@ export const achievementTypes = [
   { label: 'Readings completed', value: 'readings_completed' },
   { label: 'Quizzes passed', value: 'quizzes_passed' },
   { label: 'Accuracy above', value: 'accuracy_above' },
-  { label: 'Clan promoted', value: 'clan_promoted' },
   { label: 'Ranking achieved', value: 'ranking_achieved' },
 ];
 

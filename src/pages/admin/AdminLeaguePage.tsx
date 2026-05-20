@@ -446,7 +446,7 @@ export default function AdminLeaguePage() {
                 <p className="text-xs font-bold uppercase tracking-wider text-indigo-100/40">Member Roster</p>
                 <div className="max-h-[300px] space-y-2 overflow-y-auto pr-2 custom-scrollbar">
                   {clanDetail.members.map((member) => (
-                    <div key={member.userId} className="flex items-center justify-between rounded-xl border border-white/10 bg-white/5 px-4 py-3">
+                    <div key={member.username} className="flex items-center justify-between rounded-xl border border-white/10 bg-white/5 px-4 py-3">
                       <div>
                         <p className="text-sm font-bold text-white">{member.username}</p>
                         <p className="text-[10px] text-indigo-100/40">{member.role}</p>
