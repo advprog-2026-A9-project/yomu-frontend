@@ -1,9 +1,12 @@
 import { useState } from "react";
 import { registerUser } from "../../services/authAPI";
+import { useNavigate } from "react-router-dom";
 
 const EMAIL_REGEX = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
 
+
 const RegisterForm = () => {
+    const navigate = useNavigate();
     const [username, setUsername] = useState("");
     const [email, setEmail] = useState("");
     const [phoneNumber, setPhoneNumber] = useState("");
@@ -30,12 +33,14 @@ const RegisterForm = () => {
         try {
             await registerUser({
                 username,
-                email: email.trim() || null,
-                phoneNumber: phoneNumber.trim() || null,
+                email: email.trim() || undefined,
+                phoneNumber: phoneNumber.trim() || undefined,
                 displayName,
                 password,
             });
             setSuccess("Registrasi berhasil! Silakan login.");
+            setTimeout(() => navigate("/login"), 1500);
+
         } catch (err: unknown) {
             setError(err instanceof Error ? err.message : "Registrasi gagal");
         }
