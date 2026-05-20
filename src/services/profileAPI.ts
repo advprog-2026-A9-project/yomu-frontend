@@ -84,3 +84,20 @@ export async function updateMyBio(bio: string): Promise<UserProfile> {
     return response.json();
 }
 
+export async function updateMyProfile(data: {
+    username?: string;
+    displayName?: string;
+    oldPassword?: string;
+    newPassword?: string;
+}): Promise<void> {
+    const response = await fetchWithTimeout(`${BASE_URL}/api/auth/account`, {
+        method: 'PUT',
+        headers: authHeaders(),
+        body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+        const error = await response.json().catch(() => ({}));
+        throw new Error(error.message || 'Gagal memperbarui profil');
+    }
+}
