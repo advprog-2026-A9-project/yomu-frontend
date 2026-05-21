@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Edit2, Trash2, BookOpen, Layers, HelpCircle, AlertTriangle, X } from 'lucide-react';
+import { Plus, Edit2, Trash2, BookOpen, Layers, HelpCircle, AlertTriangle, X, Search } from 'lucide-react';
 import { getAllTexts, deleteText, getAllCategories, deleteCategory, createCategory } from '../../services/readingAPI';
 import type { ReadingTextResponse, CategoryResponse } from '../../types/reading';
-import CreateReadingForm from '../../components/reading/CreateReadingForm'; // Sesuaikan path jika error
+import CreateReadingForm from '../../components/reading/CreateReadingForm';
 
 type DeleteTarget = {
     type: 'TEXT' | 'CATEGORY';
@@ -28,6 +28,10 @@ export default function AdminReadingsPage() {
     // State Delete Modal
     const [deleteTarget, setDeleteTarget] = useState<DeleteTarget>(null);
     const [isDeleting, setIsDeleting] = useState(false);
+
+    // State Pencarian dan Filter
+    const [searchQuery, setSearchQuery] = useState('');
+    const [selectedCategoryFilter, setSelectedCategoryFilter] = useState('');
 
     const fetchData = async () => {
         try {
@@ -91,6 +95,13 @@ export default function AdminReadingsPage() {
         setSelectedText(text);
         setShowForm(true);
     };
+
+    // Filter teks berdasarkan pencarian judul dan filter kategori
+    const filteredTexts = texts.filter(text => {
+        const matchesSearch = text.title.toLowerCase().includes(searchQuery.toLowerCase());
+        const matchesCategory = selectedCategoryFilter ? text.categoryName === selectedCategoryFilter : true;
+        return matchesSearch && matchesCategory;
+    });
 
     if (loading) {
         return (
@@ -171,9 +182,41 @@ export default function AdminReadingsPage() {
 
                 {/* TABEL TEKS */}
                 <div className="lg:col-span-2 rounded-2xl border border-white/10 bg-slate-900/40 p-6 shadow-xl">
-                    <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
-                        <BookOpen size={18} className="text-indigo-400" /> Daftar Artikel
-                    </h2>
+
+                    {/* Header Tabel & Controls (Search & Filter) */}
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+                        <h2 className="text-lg font-bold flex items-center gap-2 whitespace-nowrap">
+                            <BookOpen size={18} className="text-indigo-400" /> Daftar Artikel
+                        </h2>
+
+                        <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                            {/* Search Bar */}
+                            <div className="relative w-full sm:w-48">
+                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
+                                <input
+                                    type="text"
+                                    placeholder="Cari judul..."
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    className="w-full pl-9 pr-3 py-2 bg-slate-800/50 border border-white/10 rounded-lg text-sm text-white focus:border-indigo-500 focus:bg-slate-800 outline-none transition-colors"
+                                />
+                            </div>
+
+                            {/* Dropdown Filter Kategori */}
+                            <select
+                                value={selectedCategoryFilter}
+                                onChange={(e) => setSelectedCategoryFilter(e.target.value)}
+                                className="w-full sm:w-40 px-3 py-2 bg-slate-800/50 border border-white/10 rounded-lg text-sm text-white focus:border-indigo-500 focus:bg-slate-800 outline-none appearance-none transition-colors"
+                                style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%239ca3af' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3C/svg%3E")`, backgroundPosition: `right 0.5rem center`, backgroundRepeat: `no-repeat`, backgroundSize: `1.5em 1.5em`, paddingRight: `2.5rem` }}
+                            >
+                                <option value="">Semua Kategori</option>
+                                {categories.map(cat => (
+                                    <option key={cat.id} value={cat.name}>{cat.name}</option>
+                                ))}
+                            </select>
+                        </div>
+                    </div>
+
                     <div className="overflow-x-auto">
                         <table className="w-full text-left border-collapse">
                             <thead>
@@ -184,10 +227,14 @@ export default function AdminReadingsPage() {
                             </tr>
                             </thead>
                             <tbody className="divide-y divide-white/5 text-sm">
-                            {texts.length === 0 ? (
-                                <tr><td colSpan={3} className="py-8 text-center text-indigo-100/40">Belum ada artikel.</td></tr>
+                            {filteredTexts.length === 0 ? (
+                                <tr>
+                                    <td colSpan={3} className="py-8 text-center text-indigo-100/40">
+                                        {texts.length === 0 ? 'Belum ada artikel.' : 'Artikel tidak ditemukan.'}
+                                    </td>
+                                </tr>
                             ) : (
-                                texts.map((text) => (
+                                filteredTexts.map((text) => (
                                     <tr key={text.id} className="hover:bg-white/5 group">
                                         <td className="py-4 px-4 font-semibold text-white">{text.title}</td>
                                         <td className="py-4 px-4"><span className="bg-indigo-500/10 px-2 py-1 text-xs text-indigo-400 rounded ring-1 ring-indigo-500/20">{text.categoryName}</span></td>
@@ -241,7 +288,7 @@ export default function AdminReadingsPage() {
                             categories.map((cat) => (
                                 <div key={cat.id} className="flex items-center justify-between rounded-xl bg-white/5 border border-white/5 px-4 py-3 text-sm font-medium text-white group">
                                     <span>{cat.name}</span>
-                                    <button onClick={() => setDeleteTarget({ type: 'CATEGORY', id: cat.id, name: cat.name })} className="opacity-0 group-hover:opacity-100 p-1 text-red-400 hover:bg-red-500/20 rounded">
+                                    <button onClick={() => setDeleteTarget({ type: 'CATEGORY', id: cat.id, name: cat.name })} className="opacity-0 group-hover:opacity-100 p-1 text-red-400 hover:bg-red-500/20 rounded transition-all">
                                         <Trash2 size={14} />
                                     </button>
                                 </div>
