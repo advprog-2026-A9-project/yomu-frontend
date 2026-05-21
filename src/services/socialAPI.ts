@@ -1,4 +1,5 @@
-const API_BASE = "http://localhost:8080/api/clans";
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || "";
+const API_BASE = `${BASE_URL}/api/clans`;
 
 async function parseJsonResponse<T>(response: Response, fallback: T): Promise<T> {
     const text = await response.text();
@@ -437,7 +438,7 @@ export async function getLeaderboard(search?: string): Promise<LeaderboardByTier
 
 export async function getCurrentSeason(): Promise<SeasonStatusResponse> {
     const token = localStorage.getItem("token");
-    const response = await fetchWithTimeout("http://localhost:8080/api/seasons/current", {
+    const response = await fetchWithTimeout(`${BASE_URL}/api/seasons/current`, {
         method: "GET",
         headers: {
             "Content-Type": "application/json",
@@ -454,7 +455,7 @@ export async function getCurrentSeason(): Promise<SeasonStatusResponse> {
 
 export async function endSeason(): Promise<SeasonEndResponse> {
     const token = localStorage.getItem("token");
-    const response = await fetchWithTimeout("http://localhost:8080/api/seasons/end", {
+    const response = await fetchWithTimeout(`${BASE_URL}/api/seasons/end`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
