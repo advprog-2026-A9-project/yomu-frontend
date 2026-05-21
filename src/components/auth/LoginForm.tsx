@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { ArrowRight, BadgeCheck, Lock, Mail } from "lucide-react";
 
@@ -111,9 +111,9 @@ const LoginForm = () => {
 
             <p className="mt-6 text-sm text-indigo-100/75">
                 Belum punya akun?{' '}
-                <a href="/register" className="font-semibold text-indigo-200 underline decoration-indigo-300/40 underline-offset-4">
+                <Link to="/register" className="font-semibold text-indigo-200 underline decoration-indigo-300/40 underline-offset-4">
                     Daftar sekarang
-                </a>
+                </Link>
             </p>
         </article>
     );
